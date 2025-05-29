@@ -1,0 +1,75 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Generating a Product Requirements Document (PRD) for SaaS Platform Features
+
+## Goal
+
+To guide an AI assistant in creating detailed Product Requirements Documents (PRDs) for SaaS platform features and custom AI automation tools, tailored for agentic development by non-technical business owners.
+
+## Context & Focus
+
+- **Platform Type:** Multi-tool SaaS platform providing custom AI business automation solutions
+- **Target Markets:** Marketing, sales, and finance operations for businesses
+- **Development Approach:** Agentic coding with AI agents implementing features
+- **User Role:** Non-developer business owner providing requirements and business validation
+- **Tech Stack:** Next.js 15, Supabase (with MCP), TypeScript, Tailwind CSS, shadcn/ui
+
+## Process
+
+1. **Receive Initial Prompt:** User provides a brief description or request for a new feature or AI automation tool.
+2. **Ask Business-Focused Clarifying Questions:** Focus on business value, user workflows, and operational requirements rather than technical implementation.
+3. **Generate PRD:** Create a comprehensive PRD using the structure below, emphasizing the "what" and "why" for agentic implementation.
+4. **Save PRD:** Save as `prd-[feature-name].md` in the `/docs` directory.
+
+## Clarifying Questions (Business-Focused)
+
+Adapt questions based on the prompt, focusing on business context:
+
+- **Business Value:** "What specific business problem does this solve for your customers?"
+- **Target Users:** "Who are the primary users and what are their typical workflows?"
+- **Success Metrics:** "How will you measure the success of this feature?"
+- **Customer Journey:** "Walk me through the user's complete workflow from start to finish."
+- **Integration Requirements:** "How should this integrate with existing tools or processes?"
+- **Competitive Advantage:** "What makes this solution unique compared to alternatives?"
+- **Scalability Needs:** "What volume of usage do you expect?"
+- **Compliance/Security:** "Are there any regulatory or security requirements?"
+
+## PRD Structure for SaaS Features
+
+1. **Introduction/Overview:** Business context, problem statement, and solution overview
+2. **Goals:** Specific, measurable business objectives and technical goals
+3. **User Stories:** Detailed user narratives covering all user types (customers, admins)
+4. **Functional Requirements:** Numbered, specific requirements using "must," "should," "could"
+5. **Non-Goals (Out of Scope):** Clear boundaries for the feature scope
+6. **Design Considerations:** UI/UX guidelines, responsive design, accessibility
+7. **Technical Considerations:** Supabase MCP usage, Next.js patterns, security requirements
+8. **Success Metrics:** KPIs, performance targets, user satisfaction measures
+9. **Implementation Details:** Technical constraints, file size limits, quotas, pricing (internal reference)
+
+## Technical Guidelines for Agentic Development
+
+**Always Include:**
+- Explicit mention of using Supabase MCP wherever possible
+- Row Level Security (RLS) policy requirements
+- File storage organization and quota enforcement
+- Authentication and authorization patterns
+- Internationalization readiness for future expansion
+- Testing approach (AI handles technical testing, user does acceptance validation)
+
+## Output Format
+
+- **Format:** Markdown (`.md`)
+- **Location:** `/docs/`
+- **Filename:** `prd-[feature-name].md`
+- **Audience:** AI agents implementing features and business owner for validation
+
+## Final Instructions
+
+1. **No Implementation Details:** Focus on requirements, not implementation methods
+2. **Business Clarity:** Ensure a non-developer can understand the feature's purpose and value
+3. **Agentic-Friendly:** Structure requirements for easy parsing by AI development agents
+4. **Comprehensive Scope:** Cover all aspects from database to UI to ensure nothing is missed
+5. **Supabase-First:** Emphasize Supabase capabilities and MCP integration throughout

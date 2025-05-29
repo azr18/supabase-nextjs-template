@@ -1,0 +1,157 @@
+---
+description: Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness.
+globs: .cursor/rules/*.mdc
+alwaysApply: true
+---
+# Cursor Rules for SaaS Platform Development
+
+Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness in agentic SaaS platform development.
+
+## Tech Stack Context
+
+- **Framework:** Next.js 15 with React 19
+- **Database & Auth:** Supabase with MCP (Model Context Protocol) integration
+- **Styling:** Tailwind CSS with shadcn/ui components
+- **Language:** TypeScript with strict type safety
+- **Platform:** Multi-tool SaaS platform for custom AI business automation
+- **Development:** Agentic coding with business owner validation
+
+## Required Rule Structure
+
+```markdown
+---
+description: Clear, one-line description of what the rule enforces
+globs: path/to/files/*.ext, other/path/**/*
+alwaysApply: boolean
+---
+
+- **Main Points in Bold**
+  - Sub-points with details
+  - Examples and explanations
+```
+
+## File References
+
+- Use `[filename](mdc:path/to/file)` ([filename](mdc:filename)) to reference files
+- Example: [supabase.mdc](mdc:.cursor/rules/supabase.mdc) for rule references
+- Example: [schema.sql](mdc:supabase/migrations/schema.sql) for code references
+- Example: [types.ts](mdc:nextjs/src/lib/supabase/types.ts) for TypeScript definitions
+
+## Code Examples
+
+Use language-specific code blocks with SaaS platform patterns:
+
+```typescript
+// ✅ DO: Use Supabase MCP for database operations
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(url, key);
+
+// ✅ DO: Implement proper RLS policies
+const { data, error } = await supabase
+  .from('user_tool_subscriptions')
+  .select('*')
+  .eq('user_id', user.id); // RLS automatically filters
+
+// ❌ DON'T: Skip RLS or direct database access
+const { data } = await supabase
+  .from('user_tool_subscriptions')
+  .select('*'); // No user filtering
+```
+
+```tsx
+// ✅ DO: Use shadcn/ui components consistently
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+// ✅ DO: Implement proper loading states
+const [loading, setLoading] = useState(false);
+if (loading) return <div className="animate-spin">Loading...</div>;
+
+// ❌ DON'T: Use inconsistent UI patterns
+return <div className="custom-card">...</div>; // Use Card component instead
+```
+
+## Rule Content Guidelines
+
+- **Start with SaaS Platform Context:** Reference multi-tool platform, subscription management, user access control
+- **Include Supabase-Specific Requirements:** MCP usage, RLS policies, storage bucket organization
+- **Show SaaS Patterns:** Tool access validation, subscription checking, file quota enforcement
+- **Reference Existing Architecture:** Build on template patterns, extend existing schemas
+- **Keep Rules DRY:** Reference other rules and avoid duplication
+
+## SaaS Platform Specific Patterns
+
+**Always Include in Relevant Rules:**
+- Subscription-based access control patterns
+- User isolation through RLS policies
+- File storage organization (user_id/tool_name/job_id/)
+- Quota enforcement (100MB per user)
+- Multi-tool architecture considerations
+- Authentication integration (email/password + Google OAuth)
+- Internationalization readiness
+
+## Rule Categories for SaaS Platform
+
+1. **Database Rules:** RLS policies, schema patterns, MCP usage
+2. **Authentication Rules:** Supabase Auth integration, subscription validation
+3. **Component Rules:** shadcn/ui usage, loading states, error handling
+4. **API Rules:** Next.js route patterns, error responses, validation
+5. **Storage Rules:** File organization, quota enforcement, duplicate detection
+6. **Testing Rules:** Agentic testing patterns, business validation approaches
+
+## Rule Maintenance
+
+- **Update Rules When:**
+  - New SaaS patterns emerge (e.g., new tool types, subscription models)
+  - Supabase features are added or changed
+  - Business logic patterns are established
+  - Security requirements evolve
+
+- **Add Examples From:**
+  - Actual invoice reconciler implementation
+  - Dashboard and navigation patterns
+  - File management workflows
+  - User subscription scenarios
+
+- **Cross-Reference Related Rules:**
+  - Link authentication rules to subscription rules
+  - Connect storage rules to quota enforcement
+  - Reference component rules in API documentation
+
+## Best Practices for SaaS Rules
+
+- **Business Context:** Include business logic reasoning, not just technical patterns
+- **Multi-Tenancy:** Always consider user isolation and data security
+- **Scalability:** Address patterns that work for multiple tools and users
+- **User Experience:** Include patterns for loading states, error handling, feedback
+- **Security First:** Emphasize RLS, input validation, file security
+- **Consistency:** Use consistent naming, patterns, and architectural approaches
+
+## Example Rule Categories
+
+```markdown
+// Database schema rules
+- user_tool_subscriptions table patterns
+- RLS policy implementations
+- Foreign key relationships
+
+// Component patterns
+- Tool access cards
+- File upload interfaces
+- Job status indicators
+
+// API patterns
+- Subscription validation middleware
+- File processing endpoints
+- Error response formatting
+```
+
+## Integration Requirements
+
+**Always Consider:**
+- How rules affect agentic development workflow
+- Business owner validation requirements
+- Non-developer user experience
+- Supabase MCP integration opportunities
+- Type safety and error prevention
+- Performance and scalability implications 

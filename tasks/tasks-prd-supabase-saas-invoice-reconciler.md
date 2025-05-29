@@ -1,0 +1,235 @@
+# Task List: Supabase-Based SaaS Platform Core & Multi-Invoice Reconciler MVP
+
+Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
+
+## Relevant Files
+
+- `supabase/migrations/YYYYMMDDHHMMSS_create_saas_platform_tables.sql` - Database migration for new tables (tools, user_tool_subscriptions, saved_invoices, reconciliation_jobs, airline_types)
+- `supabase/migrations/YYYYMMDDHHMMSS_setup_storage_buckets.sql` - Migration for creating and configuring storage buckets
+- `supabase/migrations/YYYYMMDDHHMMSS_setup_rls_policies.sql` - Row Level Security policies for all new tables and storage
+- `nextjs/src/lib/supabase/types.ts` - TypeScript types for new database schema
+- `nextjs/src/lib/supabase/client.ts` - Enhanced Supabase client with new methods
+- `nextjs/src/app/page.tsx` - Updated landing page component
+- `nextjs/src/components/LandingPage/Hero.tsx` - Hero section component for landing page
+- `nextjs/src/components/LandingPage/Features.tsx` - Features section component
+- `nextjs/src/components/LandingPage/Testimonials.tsx` - Testimonials section component
+- `nextjs/src/components/LandingPage/CallToAction.tsx` - CTA section component
+- `nextjs/src/app/app/page.tsx` - Redesigned customer dashboard
+- `nextjs/src/components/Dashboard/ToolCard.tsx` - Tool access card component
+- `nextjs/src/components/Dashboard/RecentJobs.tsx` - Recent jobs display component
+- `nextjs/src/components/AppLayout.tsx` - Updated navigation removing demo links
+- `nextjs/src/middleware.ts` - Enhanced middleware for subscription-based route protection
+- `nextjs/src/lib/auth/subscriptions.ts` - Subscription checking utilities
+- `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main invoice reconciler tool page
+- `nextjs/src/components/InvoiceReconciler/AirlineSelector.tsx` - Airline dropdown selector component
+- `nextjs/src/components/InvoiceReconciler/InvoiceManager.tsx` - Saved invoices management component
+- `nextjs/src/components/InvoiceReconciler/FileUpload.tsx` - File upload interface component
+- `nextjs/src/components/InvoiceReconciler/JobHistory.tsx` - Job history display component
+- `nextjs/src/lib/fileUtils/duplicateDetection.ts` - File hash and duplicate detection utilities
+- `nextjs/src/lib/fileUtils/storageManager.ts` - Supabase storage management utilities
+- `nextjs/src/app/api/reconcile/route.ts` - Main reconciliation API endpoint
+- `nextjs/src/lib/processors/base/BaseProcessor.ts` - Base class for airline processors
+- `nextjs/src/lib/processors/flyDubai/FlyDubaiProcessor.ts` - Fly Dubai reconciliation processor
+- `nextjs/src/lib/processors/tap/TapProcessor.ts` - TAP reconciliation processor
+- `nextjs/src/lib/processors/philippines/PhilippinesProcessor.ts` - Philippines Airlines processor
+- `nextjs/src/lib/processors/airIndia/AirIndiaProcessor.ts` - Air India processor
+- `nextjs/src/lib/processors/elAl/ElAlProcessor.ts` - El Al processor
+- `nextjs/src/lib/processors/utils/pdfExtractor.ts` - PDF data extraction utilities
+- `nextjs/src/lib/processors/utils/excelExtractor.ts` - Excel data extraction utilities
+- `nextjs/src/lib/processors/utils/reportGenerator.ts` - Excel report generation utilities
+- `nextjs/src/app/api/jobs/route.ts` - Job management API endpoints
+- `nextjs/src/app/api/invoices/route.ts` - Saved invoices management API
+- `nextjs/src/app/api/download/[jobId]/route.ts` - Secure file download endpoint
+- `tests/unit/` - Unit test files for components and utilities
+- `tests/integration/` - Integration test files for API endpoints
+- `tests/e2e/` - Playwright end-to-end test files
+- `tests/e2e/auth.spec.ts` - Authentication flow Playwright tests
+- `tests/e2e/dashboard.spec.ts` - Dashboard functionality Playwright tests
+- `tests/e2e/invoice-reconciler.spec.ts` - Invoice reconciler tool Playwright tests
+- `tests/e2e/file-upload.spec.ts` - File upload workflow Playwright tests
+- `tests/e2e/subscription-access.spec.ts` - Subscription-based access control Playwright tests
+- `playwright.config.ts` - Playwright configuration for testing environment
+
+### Notes
+
+- All API routes should utilize Supabase MCP (Model Context Protocol) wherever possible for database operations
+- **Agentic Testing:** AI agent handles all technical testing including:
+  - **Unit Tests:** Component and utility function testing (Jest/Vitest)
+  - **Integration Tests:** API endpoint and database integration testing
+  - **End-to-End Tests:** Playwright MCP for browser automation, user flows, and UI interactions
+  - **Visual Tests:** Playwright for responsive design and visual regression testing
+- **User Testing:** User only performs business acceptance testing (does it meet requirements?) after agent completes all technical testing
+- Use `npx jest [optional/path/to/test/file]` for unit/integration tests
+- Use `npx playwright test [optional/test/file]` for end-to-end tests (handled by AI agent)
+- Storage bucket policies must enforce 100MB per user quota
+- All new database operations should leverage RLS policies for security
+- **Testing Protocol:** Each sub-task marked "Test" means the AI agent should write and run automated tests (unit, integration, and Playwright e2e), then demonstrate functionality to user for acceptance
+
+## Tasks
+
+- [ ] 1.0 Database Schema & Infrastructure Setup
+  - [ ] 1.1 Create database migration file for `tools` table with basic schema
+  - [ ] 1.2 Create database migration file for `user_tool_subscriptions` table with foreign keys
+  - [ ] 1.3 Create database migration file for `saved_invoices` table with metadata fields
+  - [ ] 1.4 Create database migration file for `reconciliation_jobs` table with status tracking
+  - [ ] 1.5 Create database migration file for `airline_types` table with configuration
+  - [ ] 1.6 Create RLS policies migration for `tools` and `user_tool_subscriptions` tables
+  - [ ] 1.7 Create RLS policies migration for `saved_invoices` table
+  - [ ] 1.8 Create RLS policies migration for `reconciliation_jobs` table
+  - [ ] 1.9 Create Supabase storage bucket `invoice-reconciler` with basic structure
+  - [ ] 1.10 Configure storage bucket RLS policies for user isolation
+  - [ ] 1.11 Configure storage bucket quota enforcement (100MB per user)
+  - [ ] 1.12 Create database constraints for referential integrity
+  - [ ] 1.13 Generate TypeScript types for new database schema
+  - [ ] 1.14 Create automated tests for database setup, then demonstrate schema in Supabase Studio for user acceptance
+
+- [ ] 2.0 Authentication & User Management Enhancement
+  - [ ] 2.1 Review existing login page component and identify OAuth integration points
+  - [ ] 2.2 Update login page to prominently display Google OAuth button
+  - [ ] 2.3 Review existing registration page component structure
+  - [ ] 2.4 Update registration page with Google OAuth integration
+  - [ ] 2.5 Configure Google OAuth provider in Supabase Auth settings
+  - [ ] 2.6 Create middleware function for subscription-based route protection
+  - [ ] 2.7 Test Google OAuth authentication flow end-to-end
+  - [ ] 2.8 Test password reset functionality with existing Supabase Auth features
+  - [ ] 2.9 Test Multi-Factor Authentication (MFA) capabilities from template
+  - [ ] 2.10 Create automated tests for authentication scenarios, then demonstrate login/OAuth flows for user acceptance
+  - [ ] 2.11 Create Playwright end-to-end tests for complete authentication workflows
+  - [ ] 2.12 Create Playwright tests for registration and password reset flows, then demonstrate authentication system for user acceptance
+
+- [ ] 3.0 Landing Page Development
+  - [ ] 3.1 Create Hero section component with custom AI business solutions messaging
+  - [ ] 3.2 Create Features section component highlighting automation tools
+  - [ ] 3.3 Create Testimonials section component with AI solutions success stories
+  - [ ] 3.4 Create Call-to-Action section component with consultation booking flow
+  - [ ] 3.5 Update main page.tsx to integrate Hero section
+  - [ ] 3.6 Update main page.tsx to integrate Features section
+  - [ ] 3.7 Update main page.tsx to integrate Testimonials section
+  - [ ] 3.8 Update main page.tsx to integrate Call-to-Action section
+  - [ ] 3.9 Implement responsive design for Hero section across device sizes
+  - [ ] 3.10 Implement responsive design for Features and Testimonials sections
+  - [ ] 3.11 Add internationalization structure to landing page components
+  - [ ] 3.12 Run automated performance and SEO tests, then demonstrate landing page for user acceptance
+  - [ ] 3.13 Create Playwright tests for landing page responsiveness across device sizes
+  - [ ] 3.14 Create Playwright visual regression tests for landing page components, then demonstrate responsive design for user acceptance
+
+- [ ] 4.0 Customer Dashboard & Navigation Implementation
+  - [ ] 4.1 Remove existing storage demo page and related components
+  - [ ] 4.2 Remove existing table demo page and related components
+  - [ ] 4.3 Update AppLayout component to remove demo navigation links
+  - [ ] 4.4 Create ToolCard component for displaying individual tools
+  - [ ] 4.5 Create RecentJobs component for displaying job history
+  - [ ] 4.6 Update dashboard page layout with "My Tools" section structure
+  - [ ] 4.7 Integrate ToolCard component into dashboard layout
+  - [ ] 4.8 Integrate RecentJobs component into dashboard layout
+  - [ ] 4.9 Add loading states to dashboard data fetching
+  - [ ] 4.10 Add error handling for dashboard data operations
+  - [ ] 4.11 Integrate existing user settings access into dashboard navigation
+  - [ ] 4.12 Create automated tests for dashboard functionality, then demonstrate tool access scenarios for user acceptance
+  - [ ] 4.13 Create Playwright tests for dashboard navigation and tool access interactions
+  - [ ] 4.14 Create Playwright tests for dashboard loading states and error handling, then demonstrate dashboard functionality for user acceptance
+
+- [ ] 5.0 Tool Access & Subscription Management System
+  - [ ] 5.1 Create subscription checking utility functions using Supabase MCP
+  - [ ] 5.2 Create subscription validation middleware for protected routes
+  - [ ] 5.3 Create API endpoint for checking user tool subscriptions
+  - [ ] 5.4 Implement subscription status validation in ToolCard component
+  - [ ] 5.5 Add subscription status indicators to dashboard UI
+  - [ ] 5.6 Create admin documentation file for managing subscriptions via Supabase Studio
+  - [ ] 5.7 Implement user feedback for subscription status (active/inactive/trial)
+  - [ ] 5.8 Create automated tests for subscription restrictions, then demonstrate access control for user acceptance
+  - [ ] 5.9 Create Playwright tests for subscription-based access control scenarios
+  - [ ] 5.10 Create Playwright tests for subscription status indicators and user feedback, then demonstrate access control system for user acceptance
+
+- [ ] 6.0 Invoice Reconciler - Core Interface & Airline Selection
+  - [ ] 6.1 Create main invoice reconciler page component with basic layout
+  - [ ] 6.2 Create AirlineSelector component with dropdown for 5 airlines
+  - [ ] 6.3 Add airline selection state management to main page
+  - [ ] 6.4 Implement dynamic interface updates based on airline selection
+  - [ ] 6.5 Add airline-specific instruction text component
+  - [ ] 6.6 Create validation logic requiring invoice selection before proceeding
+  - [ ] 6.7 Add loading states for airline selection operations
+  - [ ] 6.8 Add error handling for airline selection functionality
+  - [ ] 6.9 Implement subscription validation for invoice reconciler tool access
+  - [ ] 6.10 Create automated tests for airline selection functionality, then demonstrate interface for user acceptance
+  - [ ] 6.11 Create Playwright tests for airline selector dropdown interactions
+  - [ ] 6.12 Create Playwright tests for dynamic interface updates and validation flows, then demonstrate airline selection interface for user acceptance
+
+- [ ] 7.0 Invoice Reconciler - File Management & Storage System
+  - [ ] 7.1 Create FileUpload component for PDF invoices with basic upload
+  - [ ] 7.2 Add drag-and-drop functionality to PDF upload component
+  - [ ] 7.3 Create FileUpload component for Excel reports (standardized format)
+  - [ ] 7.4 Implement client-side file validation (type, size up to 25MB)
+  - [ ] 7.5 Create file hash generation utility using SHA-256
+  - [ ] 7.6 Create duplicate detection utility comparing hash/filename/size
+  - [ ] 7.7 Create Supabase storage upload utility with proper file organization
+  - [ ] 7.8 Create InvoiceManager component for displaying saved invoices
+  - [ ] 7.9 Implement invoice filtering by selected airline in InvoiceManager
+  - [ ] 7.10 Add delete functionality for saved invoices
+  - [ ] 7.11 Implement upload progress indicators
+  - [ ] 7.12 Add success/error feedback for file operations
+  - [ ] 7.13 Create storage quota tracking utility
+  - [ ] 7.14 Implement storage quota enforcement (100MB per user)
+  - [ ] 7.15 Create automated tests for file upload functionality
+  - [ ] 7.16 Create automated tests for duplicate detection
+  - [ ] 7.17 Create automated tests for invoice management, then demonstrate upload/duplicate detection for user acceptance
+  - [ ] 7.18 Create Playwright tests for drag-and-drop file upload interactions
+  - [ ] 7.19 Create Playwright tests for file validation and error handling
+  - [ ] 7.20 Create Playwright tests for duplicate detection user flows
+  - [ ] 7.21 Create Playwright tests for invoice management interactions (view, delete, filter), then demonstrate complete file management system for user acceptance
+
+- [ ] 8.0 Invoice Reconciler - Reconciliation Processing Engine
+  - [ ] 8.1 Create BaseProcessor abstract class with common interface
+  - [ ] 8.2 Create PDF data extraction utility using pdf-parse library
+  - [ ] 8.3 Create Excel data extraction utility using exceljs library
+  - [ ] 8.4 Create FlyDubaiProcessor class extending BaseProcessor
+  - [ ] 8.5 Implement PDF data extraction logic for Fly Dubai invoices
+  - [ ] 8.6 Implement reconciliation logic for Fly Dubai processor
+  - [ ] 8.7 Create TapProcessor class extending BaseProcessor
+  - [ ] 8.8 Implement PDF data extraction logic for TAP invoices
+  - [ ] 8.9 Implement reconciliation logic for TAP processor
+  - [ ] 8.10 Create PhilippinesProcessor class extending BaseProcessor
+  - [ ] 8.11 Implement PDF data extraction logic for Philippines Airlines invoices
+  - [ ] 8.12 Implement reconciliation logic for Philippines Airlines processor
+  - [ ] 8.13 Create AirIndiaProcessor class extending BaseProcessor
+  - [ ] 8.14 Implement PDF data extraction logic for Air India invoices
+  - [ ] 8.15 Implement reconciliation logic for Air India processor
+  - [ ] 8.16 Create ElAlProcessor class extending BaseProcessor
+  - [ ] 8.17 Implement PDF data extraction logic for El Al invoices
+  - [ ] 8.18 Implement reconciliation logic for El Al processor
+  - [ ] 8.19 Create main reconciliation API endpoint structure
+  - [ ] 8.20 Implement job queuing logic in reconciliation API
+  - [ ] 8.21 Add status tracking to reconciliation jobs
+  - [ ] 8.22 Implement error handling and logging for reconciliation processes
+  - [ ] 8.23 Create automated tests for Fly Dubai processor with sample data
+  - [ ] 8.24 Create automated tests for TAP processor with sample data
+  - [ ] 8.25 Create automated tests for Philippines Airlines processor with sample data
+  - [ ] 8.26 Create automated tests for Air India processor with sample data
+  - [ ] 8.27 Create automated tests for El Al processor with sample data
+  - [ ] 8.28 Run end-to-end automated tests for all airlines, then demonstrate reconciliation workflow for user acceptance
+  - [ ] 8.29 Create Playwright end-to-end tests for complete reconciliation workflows
+  - [ ] 8.30 Create Playwright tests for job status tracking and error handling scenarios, then demonstrate processing engine for user acceptance
+
+- [ ] 9.0 Invoice Reconciler - Results & Reporting System
+  - [ ] 9.1 Create Excel report generation utility with basic structure
+  - [ ] 9.2 Implement multi-sheet Excel report creation
+  - [ ] 9.3 Add conditional formatting utility for highlighting discrepancies
+  - [ ] 9.4 Create summary sheet generation for Excel reports
+  - [ ] 9.5 Create reconciliation sheet generation with side-by-side comparisons
+  - [ ] 9.6 Implement airline-specific report formatting
+  - [ ] 9.7 Create secure file download system using Supabase signed URLs
+  - [ ] 9.8 Create JobHistory component for displaying past reconciliations
+  - [ ] 9.9 Implement job status tracking in JobHistory component
+  - [ ] 9.10 Add download links to completed jobs in JobHistory
+  - [ ] 9.11 Create job management API endpoint for status updates
+  - [ ] 9.12 Create job management API endpoint for file retrieval
+  - [ ] 9.13 Implement real-time job status updates in UI
+  - [ ] 9.14 Add report metadata display to job history
+  - [ ] 9.15 Create cleanup procedures for temporary files
+  - [ ] 9.16 Create cleanup procedures for completed jobs
+  - [ ] 9.17 Create automated tests for Excel report generation
+  - [ ] 9.18 Create automated tests for file download functionality
+  - [ ] 9.19 Create automated tests for job management operations, then demonstrate complete workflow for user acceptance
+  - [ ] 9.20 Create Playwright tests for job history interactions and status updates
+  - [ ] 9.21 Create Playwright tests for file download workflows
+  - [ ] 9.22 Create Playwright end-to-end tests for complete reconciliation-to-download user journey, then demonstrate complete results system for user acceptance 

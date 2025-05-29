@@ -1,0 +1,110 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Task List Management for Agentic SaaS Development
+
+Guidelines for managing task lists in markdown files to track progress on completing PRDs through agentic development with non-technical business owner validation.
+
+## Development Context
+
+- **User Role:** Non-developer business owner providing requirements and acceptance validation
+- **AI Agent Role:** Handles all technical implementation, testing, and code quality
+- **Tech Stack:** Next.js 15, Supabase (with MCP), TypeScript, Tailwind CSS, shadcn/ui
+- **Testing Split:** AI does technical testing, user does business acceptance testing
+
+## Task Implementation Protocol
+
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say "yes" or "y"
+- **Agentic Development:** AI agent implements the technical solution completely before user validation
+- **Business Validation:** After technical completion, demonstrate functionality to user for business acceptance
+- **Completion Protocol:**  
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.
+- **Stop and validate:** After each sub‑task completion, demonstrate results and wait for user go‑ahead.
+
+## Technical Implementation Requirements
+
+**Always Use When Applicable:**
+- **Supabase MCP:** Use Supabase MCP (Model Context Protocol) for all database operations and integrations
+- **Row Level Security:** Implement RLS policies for all new tables and storage buckets
+- **TypeScript:** Full type safety with generated types from Supabase schema
+- **Testing:** Create and run automated tests (unit, integration, functionality) before user demonstration
+- **Storage Management:** Enforce quotas, organize by user/tool/job structure
+- **Authentication:** Leverage existing Supabase Auth with Google OAuth integration
+
+## Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above
+   - Add new tasks as they emerge during development
+   - Update task descriptions if scope changes during implementation
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified with full path
+   - Give each file a clear description of its purpose and functionality
+   - Update descriptions if file purpose evolves
+
+3. **Track Technical Decisions:**
+   - Document any significant technical choices made during implementation
+   - Note any deviations from original plan with justification
+   - Record any new dependencies or libraries added
+
+## AI Agent Instructions
+
+When working with task lists, the AI agent must:
+
+1. **Before Starting:** Check which sub‑task is next and understand its scope completely
+2. **During Implementation:** 
+   - Use Supabase MCP wherever possible for database operations
+   - Create comprehensive automated tests for all functionality
+   - Follow existing code patterns and architecture
+   - Implement proper error handling and user feedback
+3. **After Implementation:** 
+   - Run all automated tests and ensure they pass
+   - Update the task list file marking the sub-task as completed `[x]`
+   - Demonstrate the working functionality to the user
+   - Wait for user acceptance before proceeding
+4. **Continuous Updates:**
+   - Keep "Relevant Files" section accurate and up to date
+   - Add newly discovered tasks if they emerge
+   - If a task is completed but has remaining issues, update the task list accordingly
+
+## User Validation Process
+
+**AI Agent Demonstrates:**
+- Working functionality in the browser/interface
+- Key features and workflows implemented
+- Any relevant technical aspects (performance, security)
+
+**User Validates:**
+- ✅ "Does this meet my business requirements?"
+- ✅ "Is the user experience intuitive for my customers?"
+- ✅ "Does the functionality align with my vision?"
+- ✅ "Are there any business logic issues or edge cases?"
+
+**User Does NOT Need to Validate:**
+- ❌ Code quality or technical implementation details
+- ❌ Unit test coverage or technical testing
+- ❌ Database optimization or security implementation
+- ❌ Performance metrics or system architecture
+
+## Error Handling Protocol
+
+If issues arise during implementation:
+1. **Technical Issues:** AI agent should resolve independently and re-demonstrate
+2. **Business Logic Issues:** Stop and clarify requirements with user
+3. **Scope Changes:** Update task list and get user approval for modified approach
+4. **Dependency Issues:** Research solutions and propose approach to user if it affects timeline
+
+## Success Criteria
+
+A sub-task is complete when:
+- ✅ All technical implementation is finished and tested
+- ✅ Automated tests pass
+- ✅ Functionality is demonstrated to user
+- ✅ User provides business acceptance validation
+- ✅ Task list is updated with completion status
+- ✅ Relevant files section reflects all changes
+
