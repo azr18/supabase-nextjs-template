@@ -4,7 +4,31 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 
 ## Relevant Files
 
-- `supabase/migrations/YYYYMMDDHHMMSS_create_saas_platform_tables.sql` - Database migration for new tables (tools, user_tool_subscriptions, saved_invoices, reconciliation_jobs, airline_types)
+**Supabase Project Information:**
+- **Project Name**: Invoice Reconciler SaaS Platform
+- **Project ID**: `hcyteovnllklmvoptxjr`
+- **Region**: us-east-1
+- **Status**: Active
+- **Organization**: By Nomi
+
+- `supabase/migrations/20250529103900_create_tools_table.sql` - Database migration for tools table with basic schema, RLS policies, and initial data
+- `supabase/migrations/20250529104500_create_user_tool_subscriptions_table.sql` - Database migration for user_tool_subscriptions table with foreign keys to auth.users and tools tables, RLS policies, and active subscriptions view
+- `supabase/migrations/20250529105000_create_saved_invoices_table.sql` - Database migration for saved_invoices table with metadata fields, duplicate detection, airline type constraints, usage tracking, and comprehensive utility functions
+- `supabase/migrations/20250529105500_create_reconciliation_jobs_table.sql` - Database migration for reconciliation_jobs table with status tracking and foreign key relationships
+- `supabase/migrations/20250529110000_create_airline_types_table.sql` - Database migration for airline_types table with configuration and supported airlines data
+- `supabase/migrations/20250529110500_setup_rls_policies_tools_subscriptions.sql` - Comprehensive RLS policies migration for tools and user_tool_subscriptions tables with security functions
+- `supabase/migrations/20250529111000_setup_rls_policies_saved_invoices.sql` - Enhanced RLS policies migration for saved_invoices table with quota enforcement, subscription validation, and storage management functions
+- `supabase/migrations/20250529111500_setup_rls_policies_reconciliation_jobs.sql` - Enhanced RLS policies migration for reconciliation_jobs table with subscription-based access control and security functions
+- `supabase/migrations/20250529114000_create_invoice_reconciler_storage_bucket.sql` - Storage bucket creation for invoice reconciler with file organization structure, MIME type restrictions, and 25MB file size limits
+- `supabase/migrations/20250529112000_setup_rls_policies_storage_invoice_reconciler.sql` - Storage access control functions for user isolation, subscription validation, path validation, and quota enforcement
+- `supabase/migrations/20250529115000_configure_storage_quota_enforcement.sql` - Enhanced storage quota enforcement with 100MB per user limit, comprehensive validation functions, and database integration
+- `supabase/migrations/20250529120000_create_database_constraints_referential_integrity.sql` - Comprehensive database constraints migration for referential integrity including foreign key constraints, check constraints, and admin utility functions
+- `tests/database/test_rls_policies.sql` - Test script to verify RLS policies work correctly for multi-tenant security
+- `tests/database/test_rls_policies_saved_invoices.sql` - Test script to verify enhanced RLS policies and security functions for saved_invoices table
+- `tests/database/test_rls_policies_reconciliation_jobs.sql` - Test script to verify RLS policies and security functions for reconciliation_jobs table with subscription validation
+- `tests/database/test_storage_access_functions.sql` - Test script to verify storage access control functions and provide manual policy configuration instructions
+- `tests/database/test_storage_quota_enforcement.sql` - Test script to verify storage quota enforcement functions and 100MB per user limit validation
+- `docs/storage-policy-configuration.md` - Manual configuration guide for setting up storage bucket RLS policies in Supabase Dashboard
 - `supabase/migrations/YYYYMMDDHHMMSS_setup_storage_buckets.sql` - Migration for creating and configuring storage buckets
 - `supabase/migrations/YYYYMMDDHHMMSS_setup_rls_policies.sql` - Row Level Security policies for all new tables and storage
 - `nextjs/src/lib/supabase/types.ts` - TypeScript types for new database schema
@@ -68,20 +92,20 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 ## Tasks
 
 - [ ] 1.0 Database Schema & Infrastructure Setup
-  - [ ] 1.1 Create database migration file for `tools` table with basic schema
-  - [ ] 1.2 Create database migration file for `user_tool_subscriptions` table with foreign keys
-  - [ ] 1.3 Create database migration file for `saved_invoices` table with metadata fields
-  - [ ] 1.4 Create database migration file for `reconciliation_jobs` table with status tracking
-  - [ ] 1.5 Create database migration file for `airline_types` table with configuration
-  - [ ] 1.6 Create RLS policies migration for `tools` and `user_tool_subscriptions` tables
-  - [ ] 1.7 Create RLS policies migration for `saved_invoices` table
-  - [ ] 1.8 Create RLS policies migration for `reconciliation_jobs` table
-  - [ ] 1.9 Create Supabase storage bucket `invoice-reconciler` with basic structure
-  - [ ] 1.10 Configure storage bucket RLS policies for user isolation
-  - [ ] 1.11 Configure storage bucket quota enforcement (100MB per user)
-  - [ ] 1.12 Create database constraints for referential integrity
-  - [ ] 1.13 Generate TypeScript types for new database schema
-  - [ ] 1.14 Create automated tests for database setup, then demonstrate schema in Supabase Studio for user acceptance
+  - [x] 1.1 Create database migration file for `tools` table with basic schema
+  - [x] 1.2 Create database migration file for `user_tool_subscriptions` table with foreign keys
+  - [x] 1.3 Create database migration file for `saved_invoices` table with metadata fields
+  - [x] 1.4 Create database migration file for `reconciliation_jobs` table with status tracking
+  - [x] 1.5 Create database migration file for `airline_types` table with configuration
+  - [x] 1.6 Create RLS policies migration for `tools` and `user_tool_subscriptions` tables
+  - [x] 1.7 Create RLS policies migration for `saved_invoices` table
+  - [x] 1.8 Create RLS policies migration for `reconciliation_jobs` table
+  - [x] 1.9 Create Supabase storage bucket `invoice-reconciler` with basic structure
+  - [x] 1.10 Configure storage bucket RLS policies for user isolation
+  - [x] 1.11 Configure storage bucket quota enforcement (100MB per user)
+  - [x] 1.12 Create database constraints for referential integrity
+  - [x] 1.13 Generate TypeScript types for new database schema
+  - [x] 1.14 Create automated tests for database setup, then demonstrate schema in Supabase Studio for user acceptance
 
 - [ ] 2.0 Authentication & User Management Enhancement
   - [ ] 2.1 Review existing login page component and identify OAuth integration points

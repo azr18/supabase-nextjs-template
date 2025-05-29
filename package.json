@@ -1,0 +1,15 @@
+{
+  "name": "invoice-reconciler-saas-platform",
+  "version": "1.0.0",
+  "description": "Multi-tool SaaS platform for AI business automation starting with invoice reconciliation",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:database": "node tests/database/run-database-tests.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.24"
+  }
+}
