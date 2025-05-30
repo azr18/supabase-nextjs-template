@@ -24,8 +24,22 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
         checkAuth();
     }, []);
 
+    // Show loading skeleton that matches the expected button layout
     if (loading) {
-        return null;
+        if (variant === 'nav') {
+            return (
+                <div className="flex items-center space-x-4">
+                    <div className="w-12 h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+            );
+        }
+        return (
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-40 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="w-32 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+            </div>
+        );
     }
 
     // Navigation buttons for the header

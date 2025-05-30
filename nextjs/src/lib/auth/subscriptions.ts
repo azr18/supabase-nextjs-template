@@ -81,6 +81,7 @@ export async function checkUserToolAccess(
     }
 
     // Type assertion with proper checking
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subscriptionData = subscription as any
     if (!subscriptionData.tools || !subscriptionData.tools.is_active) {
       return {
@@ -159,10 +160,12 @@ export async function getUserActiveSubscriptions(
     // Filter out expired subscriptions and inactive tools
     const now = new Date()
     return subscriptions
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((sub: any) => ({
         ...sub,
         tool: sub.tools
       }))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((sub: any) => {
         if (!sub.tool || !sub.tool.is_active) return false
         

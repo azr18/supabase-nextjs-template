@@ -69,6 +69,51 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          industry: string | null
+          last_name: string
+          message: string
+          phone_number: string | null
+          source: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          industry?: string | null
+          last_name: string
+          message: string
+          phone_number?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          industry?: string | null
+          last_name?: string
+          message?: string
+          phone_number?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reconciliation_jobs: {
         Row: {
           actual_duration_minutes: number | null
@@ -501,6 +546,14 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_analytics: {
+        Row: {
+          count: number | null
+          date: string | null
+          status: string | null
+        }
+        Relationships: []
       }
       system_foreign_key_constraints: {
         Row: {

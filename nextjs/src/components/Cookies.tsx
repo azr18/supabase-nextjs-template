@@ -10,8 +10,11 @@ const COOKIE_EXPIRY_DAYS = 365;
 
 const CookieConsent = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
+        
         const consent = getCookie(COOKIE_CONSENT_KEY);
         if (!consent) {
             const timer = setTimeout(() => {
@@ -41,7 +44,8 @@ const CookieConsent = () => {
         setIsVisible(false);
     };
 
-    if (!isVisible) return null;
+    // Prevent hydration mismatch by not rendering anything until mounted
+    if (!mounted || !isVisible) return null;
 
     return (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 transform transition-transform duration-500 ease-in-out">
