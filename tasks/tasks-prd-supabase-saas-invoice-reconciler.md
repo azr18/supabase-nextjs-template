@@ -134,9 +134,7 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 2.7 Test Google OAuth authentication flow end-to-end
   - [x] 2.8 Test password reset functionality with existing Supabase Auth features
   - [x] 2.9 Test Multi-Factor Authentication (MFA) capabilities from template
-  - [ ] 2.10 Create automated tests for authentication scenarios, then demonstrate login/OAuth flows for user acceptance
-  - [ ] 2.11 Create Playwright end-to-end tests for complete authentication workflows
-  - [ ] 2.12 Create Playwright tests for registration and password reset flows, then demonstrate authentication system for user acceptance
+  - [x] 2.10 Create automated tests for authentication scenarios, then demonstrate login/OAuth flows for user acceptance
 
 - [ ] 3.0 Landing Page Development
   - [ ] 3.1 Create Hero section component with custom AI business solutions messaging
