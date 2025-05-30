@@ -1,0 +1,135 @@
+# Test info
+
+- Name: Multi-Factor Authentication (MFA) >> MFA Accessibility and UX >> displays responsive design across device sizes
+- Location: C:\Users\ariel\Documents\GitHub\supabase-nextjs-template\tests\e2e\mfa.spec.ts:589:9
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible()
+
+Locator: locator('text=Two-Factor Authentication (2FA)')
+Expected: visible
+Received: <element(s) not found>
+Call log:
+  - expect.toBeVisible with timeout 5000ms
+  - waiting for locator('text=Two-Factor Authentication (2FA)')
+
+    at C:\Users\ariel\Documents\GitHub\supabase-nextjs-template\tests\e2e\mfa.spec.ts:605:74
+```
+
+# Test source
+
+```ts
+  505 |
+  506 |       await page.route('**/auth/v1/factors/*/verify**', async route => {
+  507 |         await route.fulfill({
+  508 |           status: 200,
+  509 |           contentType: 'application/json',
+  510 |           body: JSON.stringify({
+  511 |             access_token: 'verified_token'
+  512 |           })
+  513 |         });
+  514 |       });
+  515 |
+  516 |       await page.goto('/auth/2fa');
+  517 |       
+  518 |       // Enter verification code
+  519 |       await page.fill('input[placeholder*="Enter 6-digit code"]', '123456');
+  520 |       await page.click('button:has-text("Verify")');
+  521 |       
+  522 |       // Should redirect to app
+  523 |       await expect(page).toHaveURL(/.*\/app/);
+  524 |     });
+  525 |   });
+  526 |
+  527 |   test.describe('MFA Accessibility and UX', () => {
+  528 |     test('has proper accessibility attributes', async ({ page }) => {
+  529 |       await page.route('**/auth/v1/factors**', async route => {
+  530 |         await route.fulfill({
+  531 |           status: 200,
+  532 |           contentType: 'application/json',
+  533 |           body: JSON.stringify({
+  534 |             all: [],
+  535 |             totp: []
+  536 |           })
+  537 |         });
+  538 |       });
+  539 |
+  540 |       await page.goto('/app/user-settings');
+  541 |       
+  542 |       // Check accessibility features
+  543 |       const mfaSection = page.locator('text=Two-Factor Authentication (2FA)').locator('..');
+  544 |       await expect(mfaSection).toBeVisible();
+  545 |       
+  546 |       // Check for proper heading structure
+  547 |       await expect(page.locator('h1, h2, h3').filter({ hasText: 'User Settings' })).toBeVisible();
+  548 |     });
+  549 |
+  550 |     test('provides clear user feedback during operations', async ({ page }) => {
+  551 |       await page.route('**/auth/v1/factors**', async route => {
+  552 |         const method = route.request().method();
+  553 |         
+  554 |         if (method === 'GET') {
+  555 |           await route.fulfill({
+  556 |             status: 200,
+  557 |             contentType: 'application/json',
+  558 |             body: JSON.stringify({
+  559 |               all: [],
+  560 |               totp: []
+  561 |             })
+  562 |           });
+  563 |         } else if (method === 'POST') {
+  564 |           // Simulate slow enrollment
+  565 |           await new Promise(resolve => setTimeout(resolve, 1000));
+  566 |           await route.fulfill({
+  567 |             status: 200,
+  568 |             contentType: 'application/json',
+  569 |             body: JSON.stringify({
+  570 |               id: 'factor-123',
+  571 |               totp: {
+  572 |                 qr_code: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IndoaXRlIi8+PC9zdmc+'
+  573 |               }
+  574 |             })
+  575 |           });
+  576 |         }
+  577 |       });
+  578 |
+  579 |       await page.goto('/app/user-settings');
+  580 |       
+  581 |       await page.click('text=Add New Authentication Method');
+  582 |       await page.fill('input[placeholder*="Enter a name"]', 'Test Device');
+  583 |       await page.click('text=Continue');
+  584 |       
+  585 |       // Check loading state
+  586 |       await expect(page.locator('text=Processing')).toBeVisible();
+  587 |     });
+  588 |
+  589 |     test('displays responsive design across device sizes', async ({ page }) => {
+  590 |       await page.route('**/auth/v1/factors**', async route => {
+  591 |         await route.fulfill({
+  592 |           status: 200,
+  593 |           contentType: 'application/json',
+  594 |           body: JSON.stringify({
+  595 |             all: [],
+  596 |             totp: []
+  597 |           })
+  598 |         });
+  599 |       });
+  600 |
+  601 |       // Test mobile viewport
+  602 |       await page.setViewportSize({ width: 375, height: 667 });
+  603 |       await page.goto('/app/user-settings');
+  604 |       
+> 605 |       await expect(page.locator('text=Two-Factor Authentication (2FA)')).toBeVisible();
+      |                                                                          ^ Error: expect(locator).toBeVisible()
+  606 |       
+  607 |       // Test desktop viewport
+  608 |       await page.setViewportSize({ width: 1200, height: 800 });
+  609 |       await page.goto('/app/user-settings');
+  610 |       
+  611 |       await expect(page.locator('text=Two-Factor Authentication (2FA)')).toBeVisible();
+  612 |     });
+  613 |   });
+  614 | }); 
+```

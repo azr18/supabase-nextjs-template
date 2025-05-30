@@ -81,6 +81,9 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `tests/integration/middleware.test.js` - Integration test for middleware functions and route protection logic
 - `tests/integration/auth-api.test.js` - Comprehensive integration tests for authentication API endpoints, OAuth configuration, callback handling, session management, MFA integration, and error handling
 - `tests/unit/SSOButtons.test.js` - Unit tests for SSOButtons component covering Google OAuth functionality, provider configuration, error handling, accessibility, and user interactions
+- `tests/integration/auth-password-reset.test.js` - Comprehensive integration tests for password reset functionality including forgot password flow, reset password validation, error handling, security tests, and user experience scenarios
+- `tests/e2e/password-reset.spec.ts` - Playwright end-to-end tests for password reset functionality covering complete user journey from forgot password to password reset, form validation, accessibility, responsive design, and navigation flows
+- `docs/mfa-capabilities-summary.md` - Comprehensive summary of Multi-Factor Authentication capabilities available in the Supabase template including component analysis, workflow documentation, security features, and business value assessment
 
 ### Notes
 
@@ -129,8 +132,8 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 2.5 Configure Google OAuth provider in Supabase Auth settings
   - [x] 2.6 Create middleware function for subscription-based route protection
   - [x] 2.7 Test Google OAuth authentication flow end-to-end
-  - [ ] 2.8 Test password reset functionality with existing Supabase Auth features
-  - [ ] 2.9 Test Multi-Factor Authentication (MFA) capabilities from template
+  - [x] 2.8 Test password reset functionality with existing Supabase Auth features
+  - [x] 2.9 Test Multi-Factor Authentication (MFA) capabilities from template
   - [ ] 2.10 Create automated tests for authentication scenarios, then demonstrate login/OAuth flows for user acceptance
   - [ ] 2.11 Create Playwright end-to-end tests for complete authentication workflows
   - [ ] 2.12 Create Playwright tests for registration and password reset flows, then demonstrate authentication system for user acceptance
