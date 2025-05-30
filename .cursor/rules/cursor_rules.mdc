@@ -15,6 +15,64 @@ Guidelines for creating and maintaining Cursor rules to ensure consistency and e
 - **Language:** TypeScript with strict type safety
 - **Platform:** Multi-tool SaaS platform for custom AI business automation
 - **Development:** Agentic coding with business owner validation
+- **Environment:** Windows with PowerShell terminal
+
+## PowerShell Command Syntax Guidelines
+
+**Development Environment Context:**
+- **OS:** Windows 10.0.26100
+- **Shell:** PowerShell (not bash)
+- **Project Structure:** Multi-directory workspace with `nextjs/` subdirectory
+
+**✅ Correct PowerShell Syntax:**
+```powershell
+# ✅ DO: Use semicolon (;) for command chaining
+cd nextjs; npm run dev
+
+# ✅ DO: Use separate commands on new lines
+cd nextjs
+npm run dev
+
+# ✅ DO: Use PowerShell-specific commands
+Get-Process | Where-Object {$_.ProcessName -eq "node"}
+Start-Sleep 5
+Write-Host "Message"
+
+# ✅ DO: Navigate to correct directories
+cd nextjs  # For Next.js commands
+cd supabase  # For Supabase commands
+```
+
+**❌ Common PowerShell Mistakes:**
+```powershell
+# ❌ DON'T: Use bash syntax in PowerShell
+cd nextjs && npm run dev  # && is not valid in PowerShell
+
+# ❌ DON'T: Run Next.js commands from wrong directory
+npm run dev  # From root instead of nextjs/
+
+# ❌ DON'T: Use bash commands
+sleep 5  # Use Start-Sleep instead
+echo "message"  # Use Write-Host instead
+```
+
+**Directory Navigation Rules:**
+- **Next.js commands:** Always run from `nextjs/` directory
+- **Supabase commands:** Run from `supabase/` directory  
+- **Database migrations:** Run from `supabase/` directory
+- **Testing commands:** Run from `nextjs/` directory
+
+**Background Process Management:**
+```powershell
+# ✅ DO: Start development server in background
+npm run dev  # Let it run in background when needed
+
+# ✅ DO: Check running processes
+Get-Process | Where-Object {$_.ProcessName -eq "node"}
+
+# ✅ DO: Kill processes when needed
+taskkill /f /im node.exe
+```
 
 ## Required Rule Structure
 
@@ -154,4 +212,11 @@ return <div className="custom-card">...</div>; // Use Card component instead
 - Non-developer user experience
 - Supabase MCP integration opportunities
 - Type safety and error prevention
-- Performance and scalability implications 
+- Performance and scalability implications
+
+**Terminal Command Best Practices:**
+- **Always specify directory context** for commands (cd to correct location first)
+- **Use PowerShell syntax** (`;` not `&&`, `Start-Sleep` not `sleep`)
+- **Verify directory structure** before running package manager commands
+- **Check process status** before starting/stopping servers
+- **Use background processes** appropriately for development servers 

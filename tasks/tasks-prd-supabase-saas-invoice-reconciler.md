@@ -43,7 +43,7 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `nextjs/src/components/Dashboard/RecentJobs.tsx` - Recent jobs display component
 - `nextjs/src/components/AppLayout.tsx` - Updated navigation removing demo links
 - `nextjs/src/middleware.ts` - Enhanced middleware for subscription-based route protection
-- `nextjs/src/lib/auth/subscriptions.ts` - Subscription checking utilities
+- `nextjs/src/lib/auth/subscriptions.ts` - Subscription checking utilities and route protection functions for middleware-level access control
 - `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main invoice reconciler tool page
 - `nextjs/src/components/InvoiceReconciler/AirlineSelector.tsx` - Airline dropdown selector component
 - `nextjs/src/components/InvoiceReconciler/InvoiceManager.tsx` - Saved invoices management component
@@ -67,16 +67,30 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `tests/unit/` - Unit test files for components and utilities
 - `tests/integration/` - Integration test files for API endpoints
 - `tests/e2e/` - Playwright end-to-end test files
-- `tests/e2e/auth.spec.ts` - Authentication flow Playwright tests
+- `tests/e2e/auth.spec.ts` - Comprehensive Playwright authentication flow tests with Google OAuth integration testing
 - `tests/e2e/dashboard.spec.ts` - Dashboard functionality Playwright tests
 - `tests/e2e/invoice-reconciler.spec.ts` - Invoice reconciler tool Playwright tests
 - `tests/e2e/file-upload.spec.ts` - File upload workflow Playwright tests
 - `tests/e2e/subscription-access.spec.ts` - Subscription-based access control Playwright tests
 - `playwright.config.ts` - Playwright configuration for testing environment
+- `nextjs/src/app/auth/register/page.tsx` - Updated registration page with Google OAuth integration prominently displayed
+- `docs/google-oauth-setup.md` - Comprehensive setup guide for configuring Google OAuth in both Google Cloud Console and Supabase Dashboard
+- `nextjs/.env.example` - Environment variables template including Google OAuth credentials configuration
+- `supabase/config.toml` - Updated Supabase configuration with Google OAuth provider settings
+- `nextjs/src/middleware.ts` - Enhanced Next.js middleware with subscription-based route protection, authentication validation, and secure redirects
+- `tests/integration/middleware.test.js` - Integration test for middleware functions and route protection logic
+- `tests/integration/auth-api.test.js` - Comprehensive integration tests for authentication API endpoints, OAuth configuration, callback handling, session management, MFA integration, and error handling
+- `tests/unit/SSOButtons.test.js` - Unit tests for SSOButtons component covering Google OAuth functionality, provider configuration, error handling, accessibility, and user interactions
 
 ### Notes
 
 - All API routes should utilize Supabase MCP (Model Context Protocol) wherever possible for database operations
+- **IMPORTANT - Directory Navigation:**
+  - **Next.js commands (npm run dev, npm run build, etc.):** Must be run from `nextjs/` directory
+  - **Supabase commands:** Run from `supabase/` directory  
+  - **Database migrations:** Run from `supabase/` directory
+  - **Root-level commands:** Only for project-wide operations like Playwright tests
+  - **PowerShell Syntax:** Use `cd nextjs; npm run dev` or separate commands on new lines
 - **Agentic Testing:** AI agent handles all technical testing including:
   - **Unit Tests:** Component and utility function testing (Jest/Vitest)
   - **Integration Tests:** API endpoint and database integration testing
@@ -91,7 +105,7 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 
 ## Tasks
 
-- [ ] 1.0 Database Schema & Infrastructure Setup
+- [x] 1.0 Database Schema & Infrastructure Setup
   - [x] 1.1 Create database migration file for `tools` table with basic schema
   - [x] 1.2 Create database migration file for `user_tool_subscriptions` table with foreign keys
   - [x] 1.3 Create database migration file for `saved_invoices` table with metadata fields
@@ -107,14 +121,14 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 1.13 Generate TypeScript types for new database schema
   - [x] 1.14 Create automated tests for database setup, then demonstrate schema in Supabase Studio for user acceptance
 
-- [ ] 2.0 Authentication & User Management Enhancement
-  - [ ] 2.1 Review existing login page component and identify OAuth integration points
-  - [ ] 2.2 Update login page to prominently display Google OAuth button
-  - [ ] 2.3 Review existing registration page component structure
-  - [ ] 2.4 Update registration page with Google OAuth integration
-  - [ ] 2.5 Configure Google OAuth provider in Supabase Auth settings
-  - [ ] 2.6 Create middleware function for subscription-based route protection
-  - [ ] 2.7 Test Google OAuth authentication flow end-to-end
+- [x] 2.0 Authentication & User Management Enhancement
+  - [x] 2.1 Review existing login page component and identify OAuth integration points
+  - [x] 2.2 Update login page to prominently display Google OAuth button
+  - [x] 2.3 Review existing registration page component structure
+  - [x] 2.4 Update registration page with Google OAuth integration
+  - [x] 2.5 Configure Google OAuth provider in Supabase Auth settings
+  - [x] 2.6 Create middleware function for subscription-based route protection
+  - [x] 2.7 Test Google OAuth authentication flow end-to-end
   - [ ] 2.8 Test password reset functionality with existing Supabase Auth features
   - [ ] 2.9 Test Multi-Factor Authentication (MFA) capabilities from template
   - [ ] 2.10 Create automated tests for authentication scenarios, then demonstrate login/OAuth flows for user acceptance

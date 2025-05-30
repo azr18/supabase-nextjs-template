@@ -57,7 +57,22 @@ export default function RegisterPage() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Prominent OAuth Section */}
+            <div className="mb-6">
+                <SSOButtons onError={setError}/>
+            </div>
+
+            {/* Email/Password Registration Section */}
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"/>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-2 text-gray-500">Or register with email</span>
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                         Email address
@@ -156,8 +171,6 @@ export default function RegisterPage() {
                     </button>
                 </div>
             </form>
-
-            <SSOButtons onError={setError}/>
 
             <div className="mt-6 text-center text-sm">
                 <span className="text-gray-600">Already have an account?</span>

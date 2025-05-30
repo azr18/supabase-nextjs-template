@@ -65,6 +65,24 @@ export default function LoginPage() {
                 </div>
             )}
 
+            {/* Prominent Google OAuth Section */}
+            <div className="mb-8">
+                <h3 className="text-center text-lg font-medium text-gray-900 mb-4">
+                    Quick Sign In
+                </h3>
+                <SSOButtons onError={setError} />
+            </div>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"/>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-2 text-gray-500">Or sign in with email</span>
+                </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -120,8 +138,6 @@ export default function LoginPage() {
                     </button>
                 </div>
             </form>
-
-            <SSOButtons onError={setError} />
 
             <div className="mt-6 text-center text-sm">
                 <span className="text-gray-600">Don&#39;t have an account?</span>

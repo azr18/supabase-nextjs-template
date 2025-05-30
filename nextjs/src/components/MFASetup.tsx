@@ -4,8 +4,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Key, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import {Factor} from "@supabase/auth-js";
-import {MFAEnrollTOTPParams} from "@supabase/auth-js/src/lib/internal-types";
 
+// Define the interface locally instead of importing from internal types
+interface MFAEnrollTOTPParams {
+    factorType: 'totp';
+    friendlyName: string;
+}
 
 interface MFASetupProps {
     onStatusChange?: () => void;
