@@ -74,29 +74,7 @@ export class SassClient {
 
     }
 
-    async getMyTodoList(page: number = 1, pageSize: number = 100, order: string = 'created_at', done: boolean | null = false) {
-        let query = this.client.from('todo_list').select('*').range(page * pageSize - pageSize, page * pageSize - 1).order(order)
-        if (done !== null) {
-            query = query.eq('done', done)
-        }
-        return query
-    }
-
-    async createTask(row: Database["public"]["Tables"]["todo_list"]["Insert"]) {
-        return this.client.from('todo_list').insert(row)
-    }
-
-    async removeTask (id: number) {
-        return this.client.from('todo_list').delete().eq('id', id)
-    }
-
-    async updateAsDone (id: number) {
-        return this.client.from('todo_list').update({done: true}).eq('id', id)
-    }
-
     getSupabaseClient() {
         return this.client;
     }
-
-
 }

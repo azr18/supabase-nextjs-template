@@ -1,0 +1,262 @@
+{
+  "hero": {
+    "title": "Transform Your Business with",
+    "titleHighlight": "Custom AI Solutions",
+    "subtitle": "Expert AI automation across Marketing, Sales, Operations & Finance",
+    "description": "Every business will be transformed by AI in the next 5 years. Companies that maintain control over their AI capabilities gain a competitive edge over those dependent on off-the-shelf providers.",
+    "descriptionHighlight": "We build custom AI automation tools tailored to your unique business processes.",
+    "valueProps": {
+      "customBuilt": {
+        "title": "Custom Built",
+        "description": "AI tools designed specifically for your business workflows"
+      },
+      "dataControl": {
+        "title": "Your Data, Your Control",
+        "description": "Maintain ownership and control over your AI capabilities"
+      },
+      "rapidImplementation": {
+        "title": "Rapid Implementation",
+        "description": "From discovery to deployment in weeks, not months"
+      }
+    },
+    "cta": {
+      "getStarted": "Get Started Free",
+      "bookConsultation": "Book a Free AI Consultation"
+    },
+    "trustSignal": {
+      "text": "Trusted by businesses to automate their most critical processes",
+      "areas": {
+        "marketing": "Marketing Automation",
+        "sales": "Sales Intelligence", 
+        "operations": "Operations Optimization",
+        "financial": "Financial Processing",
+        "support": "Customer Support",
+        "documents": "Document Generation"
+      }
+    }
+  },
+  "features": {
+    "title": "Increase your operational efficiency with an",
+    "titleHighlight": "AI-powered toolkit",
+    "subtitle": "Transform your business operations across marketing, sales, and finance with custom AI automation solutions designed specifically for your unique processes and requirements.",
+    "items": {
+      "intelligentOps": {
+        "title": "Intelligent Operations",
+        "description": "Transform your company knowledge into an AI-powered brain that provides instant answers and insights."
+      },
+      "predictiveAnalytics": {
+        "title": "Predictive Analytics", 
+        "description": "Leverage AI forecasting to optimize inventory, sales, and staffing with data-driven predictions."
+      },
+      "leadGeneration": {
+        "title": "Lead Generation & Research",
+        "description": "Automatically discover, research, and qualify prospects with comprehensive intelligence reports."
+      },
+      "automatedComm": {
+        "title": "Automated Communication",
+        "description": "Scale personalized outreach, manage customer support, and maintain consistent brand messaging."
+      },
+      "documentAuto": {
+        "title": "Document Automation", 
+        "description": "Generate contracts, invoices, and reports automatically while maintaining accuracy and compliance."
+      },
+      "financialIntel": {
+        "title": "Financial Intelligence",
+        "description": "Automate financial forecasting, reconciliation, and reporting for better business decisions."
+      },
+      "salesOptimization": {
+        "title": "Sales Optimization",
+        "description": "Enhance sales performance with AI-powered training insights and prospect research."
+      },
+      "contentCreation": {
+        "title": "Content Creation",
+        "description": "Streamline marketing content production with AI-assisted research, writing, and scheduling."
+      }
+    },
+    "cta": {
+      "title": "Built for Your Business, Not One-Size-Fits-All",
+      "description": "Every automation solution is custom-built to match your specific business processes, industry requirements, and operational goals. No generic templates – just powerful AI tools designed around your unique workflow.",
+      "valueProps": {
+        "customBuilt": {
+          "title": "Custom Built",
+          "description": "Tailored to your specific business processes and requirements"
+        },
+        "aiPowered": {
+          "title": "AI-Powered",
+          "description": "Advanced AI and machine learning for intelligent automation"
+        },
+        "scalable": {
+          "title": "Scalable",
+          "description": "Grows with your business from startup to enterprise"
+        }
+      }
+    }
+  },
+  "process": {
+    "title": "From Zero to",
+    "titleHighlight": "Hero",
+    "subtitle": "Our team of experts will guide you from AI opportunities to implementation.",
+    "steps": {
+      "discovery": {
+        "title": "AI Discovery Session",
+        "description": "Identify opportunities to transform your business with AI, calculate ROI, prioritise use cases.",
+        "phase": "VALIDATE"
+      },
+      "scoping": {
+        "title": "AI Scoping Programme", 
+        "description": "Build a robust AI strategy, predict and mitigate all possible risk factors, build a detailed roadmap.",
+        "phase": "VALIDATE"
+      },
+      "poc": {
+        "title": "Proof of Concept (PoC)",
+        "description": "Validate that a solution will work by building the simplest possible version of your product.",
+        "phase": "AUTOMATE"
+      },
+      "mvp": {
+        "title": "Minimum Viable Product (MVP)",
+        "description": "Turn the PoC into the simplest version of a usable product that can be beta tested by external users.",
+        "phase": "AUTOMATE"
+      },
+      "maintenance": {
+        "title": "Ongoing Maintenance",
+        "description": "Fully customised managed services agreement to maintain and enhance your product and help you keep up with the latest technology trends.",
+        "phase": "OPTIMISE"
+      }
+    },
+    "timeline": {
+      "title": "Your AI Journey Timeline",
+      "description": "From initial consultation to full deployment, most AI solutions are delivered within 2-6 weeks.",
+      "phases": {
+        "week1": {
+          "title": "Week 1",
+          "description": "Discovery & Planning Phase"
+        },
+        "weeks24": {
+          "title": "2-4 Weeks", 
+          "description": "Development & Testing"
+        },
+        "ongoing": {
+          "title": "Ongoing",
+          "description": "Support & Enhancement"
+        }
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Business with",
+    "titleHighlight": "Custom AI Solutions?",
+    "subtitle": "Join leading businesses that have streamlined their operations with custom-built AI automation tools. Get started with a free consultation to discover how AI can revolutionize your workflow.",
+    "buttons": {
+      "getStarted": "Get Started Free",
+      "bookConsultation": "Book a Free AI Consultation"
+    },
+    "valueProps": {
+      "discovery": {
+        "title": "Free Discovery Session",
+        "description": "30-minute consultation to identify AI opportunities in your business operations and calculate potential ROI for automation solutions."
+      },
+      "strategy": {
+        "title": "Custom AI Strategy",
+        "description": "Tailored AI implementation roadmap designed specifically for your industry, workflow requirements, and business objectives."
+      },
+      "support": {
+        "title": "Ongoing Support",
+        "description": "Dedicated support throughout implementation and beyond to ensure your AI solutions continue delivering maximum value."
+      }
+    },
+    "consultation": {
+      "title": "Start Your AI Transformation Today",
+      "description": "Book a free 30-minute consultation with our AI specialists to:",
+      "benefits": {
+        "opportunities": "Identify specific automation opportunities in your workflow",
+        "roi": "Understand the ROI potential of custom AI solutions", 
+        "roadmap": "Get a preliminary roadmap for AI implementation",
+        "customTools": "Learn about custom tool development for your industry"
+      },
+      "buttons": {
+        "getStarted": "Get Started Free",
+        "bookConsultation": "Book a Free AI Consultation"
+      }
+    },
+    "form": {
+      "title": "Request Your Free AI Strategy Session",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Work Email",
+        "phoneNumber": "Phone Number",
+        "company": "Company",
+        "industry": "Industry",
+        "message": "Tell us about your AI automation needs",
+        "messagePlaceholder": "What business processes would you like to automate with AI? What challenges are you facing? What are your goals?"
+      },
+      "industryOptions": {
+        "select": "Select your industry",
+        "finance": "Finance & Accounting",
+        "marketing": "Marketing & Sales",
+        "operations": "Operations & Logistics", 
+        "hr": "Human Resources",
+        "technology": "Technology",
+        "healthcare": "Healthcare",
+        "retail": "Retail",
+        "manufacturing": "Manufacturing",
+        "other": "Other"
+      },
+      "submitButton": "Request Free AI Strategy Session",
+      "submitting": "Submitting...",
+      "privacy": "By submitting this form, you agree to receive communications about our AI solutions. Your information is secure and will never be shared.",
+      "success": {
+        "title": "Thank you for your interest!",
+        "message": "We'll contact you within 24 hours to schedule your free AI strategy session."
+      },
+      "error": {
+        "title": "Submission Failed"
+      }
+    },
+    "finalEncouragement": {
+      "text": "Join hundreds of businesses already transforming their operations with custom AI solutions.",
+      "stats": {
+        "industries": "30+ Industries Served",
+        "satisfaction": "98% Customer Satisfaction", 
+        "support": "24/7 Support Available"
+      }
+    }
+  },
+  "common": {
+    "required": "*",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "features": "Features",
+    "process": "Our Process", 
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "documentation": "Documentation",
+    "grabTemplate": "Grab This Template"
+  },
+  "footer": {
+    "sections": {
+      "product": "Product",
+      "resources": "Resources",
+      "legal": "Legal"
+    },
+    "links": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "documentation": "Documentation",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "copyright": "All rights reserved."
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that's right for your business (IT'S PLACEHOLDER NO PRICING FOR THIS TEMPLATE)",
+    "mostPopular": "Most Popular",
+    "perMonth": "/month",
+    "getStarted": "Get Started",
+    "allPlansInclude": "All plans include:"
+  }
+} 

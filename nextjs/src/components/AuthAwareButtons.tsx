@@ -47,22 +47,25 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
         return isAuthenticated ? (
             <Link
                 href="/app"
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium"
             >
                 Go to Dashboard
             </Link>
         ) : (
-            <>
-                <Link href="/auth/login" className="text-gray-600 hover:text-gray-900">
+            <div className="flex items-center space-x-4">
+                <Link 
+                    href="/auth/login" 
+                    className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+                >
                     Login
                 </Link>
                 <Link
                     href="/auth/register"
-                    className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                    className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium"
                 >
                     Get Started
                 </Link>
-            </>
+            </div>
         );
     }
 
@@ -70,7 +73,7 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
     return isAuthenticated ? (
         <Link
             href="/app"
-            className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 text-white font-medium hover:shadow-xl hover:scale-105 transition-all duration-300"
         >
             Go to Dashboard
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -79,14 +82,14 @@ export default function AuthAwareButtons({ variant = 'primary' }) {
         <>
             <Link
                 href="/auth/register"
-                className="inline-flex items-center px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 text-white font-medium hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
                 Start Building Free
                 <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
                 href="#features"
-                className="inline-flex items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-blue-300 transition-all duration-300"
             >
                 Learn More
                 <ChevronRight className="ml-2 h-5 w-5" />

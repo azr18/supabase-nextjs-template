@@ -1,0 +1,262 @@
+{
+  "hero": {
+    "title": "Transforme su negocio con",
+    "titleHighlight": "Soluciones de IA Personalizadas",
+    "subtitle": "Automatización de IA experta en Marketing, Ventas, Operaciones y Finanzas",
+    "description": "Todos los negocios serán transformados por la IA en los próximos 5 años. Las empresas que mantienen control sobre sus capacidades de IA obtienen una ventaja competitiva sobre aquellas dependientes de proveedores predeterminados.",
+    "descriptionHighlight": "Construimos herramientas de automatización de IA adaptadas a sus procesos empresariales únicos.",
+    "valueProps": {
+      "customBuilt": {
+        "title": "Construido a Medida",
+        "description": "Herramientas de IA diseñadas específicamente para sus flujos de trabajo empresariales"
+      },
+      "dataControl": {
+        "title": "Sus Datos, Su Control",
+        "description": "Mantenga la propiedad y control sobre sus capacidades de IA"
+      },
+      "rapidImplementation": {
+        "title": "Implementación Rápida",
+        "description": "Del descubrimiento al despliegue en semanas, no meses"
+      }
+    },
+    "cta": {
+      "getStarted": "Comenzar Gratis",
+      "bookConsultation": "Reservar Consulta de IA Gratuita"
+    },
+    "trustSignal": {
+      "text": "Confiado por empresas para automatizar sus procesos más críticos",
+      "areas": {
+        "marketing": "Automatización de Marketing",
+        "sales": "Inteligencia de Ventas",
+        "operations": "Optimización de Operaciones",
+        "financial": "Procesamiento Financiero",
+        "support": "Soporte al Cliente",
+        "documents": "Generación de Documentos"
+      }
+    }
+  },
+  "features": {
+    "title": "Aumente su eficiencia operacional con un",
+    "titleHighlight": "conjunto de herramientas impulsado por IA",
+    "subtitle": "Transforme sus operaciones empresariales en marketing, ventas y finanzas con soluciones de automatización de IA diseñadas específicamente para sus procesos y requisitos únicos.",
+    "items": {
+      "intelligentOps": {
+        "title": "Operaciones Inteligentes",
+        "description": "Transforme el conocimiento de su empresa en un cerebro impulsado por IA que proporciona respuestas e insights instantáneos."
+      },
+      "predictiveAnalytics": {
+        "title": "Analítica Predictiva",
+        "description": "Aproveche las previsiones de IA para optimizar inventario, ventas y personal con predicciones basadas en datos."
+      },
+      "leadGeneration": {
+        "title": "Generación de Leads e Investigación",
+        "description": "Descubra, investigue y califique prospectos automáticamente con informes de inteligencia completos."
+      },
+      "automatedComm": {
+        "title": "Comunicación Automatizada",
+        "description": "Escale alcance personalizado, gestione soporte al cliente y mantenga mensajes de marca consistentes."
+      },
+      "documentAuto": {
+        "title": "Automatización de Documentos",
+        "description": "Genere contratos, facturas e informes automáticamente manteniendo precisión y cumplimiento."
+      },
+      "financialIntel": {
+        "title": "Inteligencia Financiera",
+        "description": "Automatice previsiones financieras, conciliación e informes para mejores decisiones empresariales."
+      },
+      "salesOptimization": {
+        "title": "Optimización de Ventas",
+        "description": "Mejore el rendimiento de ventas con insights de entrenamiento impulsados por IA e investigación de prospectos."
+      },
+      "contentCreation": {
+        "title": "Creación de Contenido",
+        "description": "Optimice la producción de contenido de marketing con investigación, escritura y programación asistidas por IA."
+      }
+    },
+    "cta": {
+      "title": "Construido para su Negocio, No de Talla Única",
+      "description": "Cada solución de automatización está construida a medida para coincidir con sus procesos empresariales específicos, requisitos de la industria y objetivos operacionales. Sin plantillas genéricas, solo herramientas de IA poderosas diseñadas alrededor de su flujo de trabajo único.",
+      "valueProps": {
+        "customBuilt": {
+          "title": "Construido a Medida",
+          "description": "Adaptado a sus procesos empresariales y requisitos específicos"
+        },
+        "aiPowered": {
+          "title": "Impulsado por IA",
+          "description": "IA avanzada y aprendizaje automático para automatización inteligente"
+        },
+        "scalable": {
+          "title": "Escalable",
+          "description": "Crece con su negocio desde startup hasta empresa"
+        }
+      }
+    }
+  },
+  "process": {
+    "title": "De Cero a",
+    "titleHighlight": "Héroe",
+    "subtitle": "Nuestro equipo de expertos lo guiará desde las oportunidades de IA hasta la implementación.",
+    "steps": {
+      "discovery": {
+        "title": "Sesión de Descubrimiento de IA",
+        "description": "Identifique oportunidades para transformar su negocio con IA, calcule ROI, priorice casos de uso.",
+        "phase": "VALIDAR"
+      },
+      "scoping": {
+        "title": "Programa de Alcance de IA",
+        "description": "Construya una estrategia de IA robusta, prediga y mitigue todos los factores de riesgo posibles, construya una hoja de ruta detallada.",
+        "phase": "VALIDAR"
+      },
+      "poc": {
+        "title": "Prueba de Concepto (PoC)",
+        "description": "Valide que una solución funcionará construyendo la versión más simple posible de su producto.",
+        "phase": "AUTOMATIZAR"
+      },
+      "mvp": {
+        "title": "Producto Mínimo Viable (MVP)",
+        "description": "Convierta el PoC en la versión más simple de un producto utilizable que pueda ser probado en beta por usuarios externos.",
+        "phase": "AUTOMATIZAR"
+      },
+      "maintenance": {
+        "title": "Mantenimiento Continuo",
+        "description": "Acuerdo de servicios gestionados completamente personalizado para mantener y mejorar su producto y ayudarle a mantenerse al día con las últimas tendencias tecnológicas.",
+        "phase": "OPTIMIZAR"
+      }
+    },
+    "timeline": {
+      "title": "Cronología de su Viaje de IA",
+      "description": "Desde la consulta inicial hasta el despliegue completo, la mayoría de las soluciones de IA se entregan en 2-6 semanas.",
+      "phases": {
+        "week1": {
+          "title": "Semana 1",
+          "description": "Fase de Descubrimiento y Planificación"
+        },
+        "weeks24": {
+          "title": "2-4 Semanas",
+          "description": "Desarrollo y Pruebas"
+        },
+        "ongoing": {
+          "title": "Continuo",
+          "description": "Soporte y Mejora"
+        }
+      }
+    }
+  },
+  "cta": {
+    "title": "¿Listo para transformar su negocio con",
+    "titleHighlight": "Soluciones de IA Personalizadas?",
+    "subtitle": "Únase a empresas líderes que han optimizado sus operaciones con herramientas de automatización de IA construidas a medida. Comience con una consulta gratuita para descubrir cómo la IA puede revolucionar su flujo de trabajo.",
+    "buttons": {
+      "getStarted": "Comenzar Gratis",
+      "bookConsultation": "Reservar Consulta de IA Gratuita"
+    },
+    "valueProps": {
+      "discovery": {
+        "title": "Sesión de Descubrimiento Gratuita",
+        "description": "Consulta de 30 minutos para identificar oportunidades de IA en sus operaciones empresariales y calcular ROI potencial para soluciones de automatización."
+      },
+      "strategy": {
+        "title": "Estrategia de IA Personalizada",
+        "description": "Hoja de ruta de implementación de IA adaptada diseñada específicamente para su industria, requisitos de flujo de trabajo y objetivos empresariales."
+      },
+      "support": {
+        "title": "Soporte Continuo",
+        "description": "Soporte dedicado durante la implementación y más allá para asegurar que sus soluciones de IA continúen entregando valor máximo."
+      }
+    },
+    "consultation": {
+      "title": "Comience su Transformación de IA Hoy",
+      "description": "Reserve una consulta gratuita de 30 minutos con nuestros especialistas en IA para:",
+      "benefits": {
+        "opportunities": "Identificar oportunidades específicas de automatización en su flujo de trabajo",
+        "roi": "Entender el potencial de ROI de soluciones de IA personalizadas",
+        "roadmap": "Obtener una hoja de ruta preliminar para implementación de IA",
+        "customTools": "Aprender sobre desarrollo de herramientas personalizadas para su industria"
+      },
+      "buttons": {
+        "getStarted": "Comenzar Gratis",
+        "bookConsultation": "Reservar Consulta de IA Gratuita"
+      }
+    },
+    "form": {
+      "title": "Solicite su Sesión de Estrategia de IA Gratuita",
+      "fields": {
+        "firstName": "Nombre",
+        "lastName": "Apellido",
+        "email": "Email de Trabajo",
+        "phoneNumber": "Número de Teléfono",
+        "company": "Empresa",
+        "industry": "Industria",
+        "message": "Cuéntenos sobre sus necesidades de automatización de IA",
+        "messagePlaceholder": "¿Qué procesos empresariales le gustaría automatizar con IA? ¿Qué desafíos está enfrentando? ¿Cuáles son sus objetivos?"
+      },
+      "industryOptions": {
+        "select": "Seleccione su industria",
+        "finance": "Finanzas y Contabilidad",
+        "marketing": "Marketing y Ventas",
+        "operations": "Operaciones y Logística",
+        "hr": "Recursos Humanos",
+        "technology": "Tecnología",
+        "healthcare": "Salud",
+        "retail": "Venta al por Menor",
+        "manufacturing": "Manufactura",
+        "other": "Otro"
+      },
+      "submitButton": "Solicitar Sesión de Estrategia de IA Gratuita",
+      "submitting": "Enviando...",
+      "privacy": "Al enviar este formulario, acepta recibir comunicaciones sobre nuestras soluciones de IA. Su información es segura y nunca será compartida.",
+      "success": {
+        "title": "¡Gracias por su interés!",
+        "message": "Lo contactaremos dentro de 24 horas para programar su sesión de estrategia de IA gratuita."
+      },
+      "error": {
+        "title": "Error de Envío"
+      }
+    },
+    "finalEncouragement": {
+      "text": "Únase a cientos de empresas que ya están transformando sus operaciones con soluciones de IA personalizadas.",
+      "stats": {
+        "industries": "30+ Industrias Servidas",
+        "satisfaction": "98% Satisfacción del Cliente",
+        "support": "Soporte 24/7 Disponible"
+      }
+    }
+  },
+  "common": {
+    "required": "*",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "navigation": {
+    "features": "Características",
+    "process": "Nuestro Proceso",
+    "pricing": "Precios",
+    "contact": "Contacto",
+    "documentation": "Documentación",
+    "grabTemplate": "Obtener Esta Plantilla"
+  },
+  "footer": {
+    "sections": {
+      "product": "Producto",
+      "resources": "Recursos",
+      "legal": "Legal"
+    },
+    "links": {
+      "features": "Características",
+      "pricing": "Precios",
+      "documentation": "Documentación",
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    },
+    "copyright": "Todos los derechos reservados."
+  },
+  "pricing": {
+    "title": "Precios Simples y Transparentes",
+    "subtitle": "Elija el plan adecuado para su negocio (ES PLACEHOLDER NO HAY PRECIOS PARA ESTA PLANTILLA)",
+    "mostPopular": "Más Popular",
+    "perMonth": "/mes",
+    "getStarted": "Comenzar",
+    "allPlansInclude": "Todos los planes incluyen:"
+  }
+} 

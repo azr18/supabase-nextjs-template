@@ -3,8 +3,27 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
+import { useTranslations } from '@/i18n'
 
 export default function Hero() {
+  const { t, isLoading } = useTranslations();
+
+  if (isLoading) {
+    return (
+      <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-secondary/20">
+        <div className="relative mx-auto max-w-7xl px-4 pt-8 pb-12 sm:px-6 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20 lg:px-8 lg:pt-20 lg:pb-24 xl:pt-24 xl:pb-28">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded mb-4 sm:h-12 md:h-16"></div>
+              <div className="h-6 bg-gray-200 rounded mb-4 sm:h-8"></div>
+              <div className="h-4 bg-gray-200 rounded mb-8 sm:h-6"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-secondary/20">
       {/* Background Pattern */}
@@ -16,21 +35,21 @@ export default function Hero() {
         <div className="mx-auto max-w-4xl text-center">
           {/* Main Headline */}
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight sm:leading-tight md:leading-tight lg:leading-tight xl:leading-tight">
-            Transform Your Business with{' '}
+            {t('hero.title')}{' '}
             <span className="bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent">
-              Custom AI Solutions
+              {t('hero.titleHighlight')}
             </span>
           </h1>
 
           {/* Subheadline */}
           <h2 className="mt-3 text-lg text-muted-foreground sm:mt-4 sm:text-xl md:text-xl lg:text-2xl xl:text-2xl font-medium">
-            Expert AI automation across Marketing, Sales, Operations & Finance
+            {t('hero.subtitle')}
           </h2>
 
           {/* Description */}
           <p className="mt-4 text-base leading-7 text-muted-foreground max-w-2xl mx-auto sm:mt-6 sm:text-lg sm:leading-8 sm:max-w-3xl md:max-w-3xl lg:max-w-3xl xl:max-w-4xl">
-            Every business will be transformed by AI in the next 5 years. Companies that maintain control over their AI capabilities gain a competitive edge over those dependent on off-the-shelf providers. 
-            <span className="font-semibold text-foreground"> We build custom AI automation tools tailored to your unique business processes.</span>
+            {t('hero.description')}
+            <span className="font-semibold text-foreground"> {t('hero.descriptionHighlight')}</span>
           </p>
 
           {/* Key Value Points */}
@@ -42,9 +61,9 @@ export default function Hero() {
                   <circle cx="12" cy="10" r="3" fill="currentColor" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold text-foreground sm:text-base">Custom Built</h3>
+              <h3 className="text-sm font-semibold text-foreground sm:text-base">{t('hero.valueProps.customBuilt.title')}</h3>
               <p className="text-xs text-muted-foreground mt-1 sm:text-sm">
-                AI tools designed specifically for your business workflows
+                {t('hero.valueProps.customBuilt.description')}
               </p>
             </div>
             
@@ -55,9 +74,9 @@ export default function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" fill="none" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold text-foreground sm:text-base">Your Data, Your Control</h3>
+              <h3 className="text-sm font-semibold text-foreground sm:text-base">{t('hero.valueProps.dataControl.title')}</h3>
               <p className="text-xs text-muted-foreground mt-1 sm:text-sm">
-                Maintain ownership and control over your AI capabilities
+                {t('hero.valueProps.dataControl.description')}
               </p>
             </div>
             
@@ -68,9 +87,9 @@ export default function Hero() {
                   <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.3" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold text-foreground sm:text-base">Rapid Implementation</h3>
+              <h3 className="text-sm font-semibold text-foreground sm:text-base">{t('hero.valueProps.rapidImplementation.title')}</h3>
               <p className="text-xs text-muted-foreground mt-1 sm:text-sm">
-                From discovery to deployment in weeks, not months
+                {t('hero.valueProps.rapidImplementation.description')}
               </p>
             </div>
           </div>
@@ -79,14 +98,14 @@ export default function Hero() {
           <div className="mt-6 flex flex-col gap-3 justify-center items-center sm:mt-8 sm:gap-4 md:flex-row lg:gap-6">
             <Link href="/auth/register" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 hover:from-gray-700 hover:via-blue-600 hover:to-blue-700 text-white px-6 py-2.5 text-base font-semibold rounded-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl border-0 sm:w-auto sm:px-8 sm:py-3 sm:text-lg lg:px-10 lg:py-3.5">
-                Get Started Free
+                {t('hero.cta.getStarted')}
                 <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
             
             <Link href="https://calendly.com/ariel-r08/free-online-ai-consultation" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-gradient-to-r from-blue-600 via-violet-500 to-violet-700 hover:from-blue-700 hover:via-violet-600 hover:to-violet-800 text-white px-6 py-2.5 text-base font-semibold rounded-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl border-0 sm:w-auto sm:px-8 sm:py-3 sm:text-lg lg:px-10 lg:py-3.5">
-                Book a Free AI Consultation
+                {t('hero.cta.bookConsultation')}
               </Button>
             </Link>
           </div>
@@ -94,17 +113,17 @@ export default function Hero() {
           {/* Trust Signal */}
           <div className="mt-8 sm:mt-10 lg:mt-12">
             <p className="text-xs font-medium text-muted-foreground mb-3 sm:text-sm sm:mb-4">
-              Trusted by businesses to automate their most critical processes
+              {t('hero.trustSignal.text')}
             </p>
             
             {/* Business Process Areas */}
             <div className="flex flex-wrap justify-center gap-2 text-xs font-medium text-muted-foreground sm:gap-3 sm:text-xs lg:gap-4">
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Marketing Automation</span>
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Sales Intelligence</span>
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Operations Optimization</span>
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Financial Processing</span>
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Customer Support</span>
-              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">Document Generation</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.marketing')}</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.sales')}</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.operations')}</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.financial')}</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.support')}</span>
+              <span className="bg-secondary/30 px-2 py-1 rounded-full sm:px-3">{t('hero.trustSignal.areas.documents')}</span>
             </div>
           </div>
         </div>

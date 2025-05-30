@@ -42,5 +42,11 @@ export default defineConfig({
     },
   ],
 
-  // Removed webServer configuration for documentation tests
+  // Web server configuration to automatically start the dev server
+  webServer: {
+    command: 'cd nextjs && npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
 }); 
