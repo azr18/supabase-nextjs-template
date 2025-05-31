@@ -147,10 +147,6 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     }
   }, [user?.id, validateSubscription]);
 
-  // Get current subscription (use validated result if available, otherwise fallback to prop)
-  const currentSubscription = validationState.result?.subscription || tool.subscription;
-  const hasValidatedAccess = validationState.result?.hasAccess ?? null;
-  
   // Enhanced access logic with validation result
   const getAccessStatus = () => {
     // If validation is in progress or failed, use original data
@@ -189,7 +185,7 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     if (!subscription) {
       return (
         <div className="flex items-center gap-2">
-          <Badge variant="outline">No Access</Badge>
+          <Badge variant="outline" className="bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300 text-gray-700">No Access</Badge>
           {validationState.error && (
             <div className="relative group">
               <AlertCircle className="h-3 w-3 text-amber-500" />
@@ -205,19 +201,19 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     let badge;
     switch (subscription.status) {
       case 'active':
-        badge = <Badge variant="default" className="bg-green-500 hover:bg-green-600">Active</Badge>;
+        badge = <Badge variant="default" className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 hover:from-gray-700 hover:via-blue-600 hover:to-blue-700 text-white border-0 shadow-md transition-all duration-300 hover:scale-105">Active</Badge>;
         break;
       case 'trial':
-        badge = <Badge variant="secondary" className="bg-blue-500 hover:bg-blue-600 text-white">Trial</Badge>;
+        badge = <Badge variant="secondary" className="bg-gradient-to-r from-blue-500 via-blue-600 to-violet-500 hover:from-blue-600 hover:via-blue-700 hover:to-violet-600 text-white border-0 shadow-md transition-all duration-300 hover:scale-105">Trial</Badge>;
         break;
       case 'expired':
-        badge = <Badge variant="destructive">Expired</Badge>;
+        badge = <Badge variant="destructive" className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-md transition-all duration-300 hover:scale-105">Expired</Badge>;
         break;
       case 'inactive':
-        badge = <Badge variant="outline" className="bg-gray-100">Inactive</Badge>;
+        badge = <Badge variant="outline" className="bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300 text-gray-700 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-105">Inactive</Badge>;
         break;
       default:
-        badge = <Badge variant="outline">{subscription.status}</Badge>;
+        badge = <Badge variant="outline" className="bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300 text-gray-700 hover:from-gray-200 hover:to-gray-300 transition-all duration-300 hover:scale-105">{subscription.status}</Badge>;
     }
 
     return (
@@ -258,14 +254,14 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
       return (
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3 text-blue-600" />
-          <span className="text-xs text-blue-600">{daysLeft} days left</span>
+          <span className="text-xs text-blue-600 font-medium">{daysLeft} days left</span>
         </div>
       );
     }
     return (
       <div className="flex items-center gap-1">
         <XCircle className="h-3 w-3 text-red-600" />
-        <span className="text-xs text-red-600">Trial expired</span>
+        <span className="text-xs text-red-600 font-medium">Trial expired</span>
       </div>
     );
   };
@@ -282,7 +278,7 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
       return (
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3 text-orange-600" />
-          <span className="text-xs text-orange-600">Expires in {daysLeft} days</span>
+          <span className="text-xs text-orange-600 font-medium">Expires in {daysLeft} days</span>
         </div>
       );
     }
@@ -295,7 +291,7 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     // Use validation reason if available
     if (validationState.result?.reason) {
       return (
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-xs text-gray-500 mt-1 font-medium">
           {validationState.result.reason}
         </div>
       );
@@ -304,135 +300,150 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     // Fallback reasons
     const { subscription } = accessStatus;
     if (!subscription) {
-      return <div className="text-xs text-gray-500 mt-1">No subscription found</div>;
+      return <div className="text-xs text-gray-500 mt-1 font-medium">No subscription found</div>;
     }
     
     if (subscription.status === 'expired') {
-      return <div className="text-xs text-gray-500 mt-1">Subscription has expired</div>;
+      return <div className="text-xs text-gray-500 mt-1 font-medium">Subscription has expired</div>;
     }
     
     if (subscription.status === 'inactive') {
-      return <div className="text-xs text-gray-500 mt-1">Subscription is inactive</div>;
+      return <div className="text-xs text-gray-500 mt-1 font-medium">Subscription is inactive</div>;
     }
 
-    return <div className="text-xs text-gray-500 mt-1">Access not available</div>;
+    return <div className="text-xs text-gray-500 mt-1 font-medium">Access not available</div>;
   };
 
   const handleRefreshStatus = async () => {
     await validateSubscription(true, true);
   };
 
-  const handleToolAccess = () => {
-    if (!accessStatus.hasAccess) {
-      subscriptionFeedback.showAccessDenied(
-        tool.name,
-        'You need an active subscription to access this tool.'
-      );
-      return;
-    }
-
-    // Show status feedback when accessing tool
-    const { subscription } = accessStatus;
-    if (subscription) {
-      const now = new Date();
-      let daysRemaining: number | undefined;
-      let isExpiringSoon = false;
-
-      if (subscription.status === 'trial' && subscription.trial_ends_at) {
-        const trialEnd = new Date(subscription.trial_ends_at);
-        daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        isExpiringSoon = daysRemaining <= 3;
-      } else if (subscription.status === 'active' && subscription.expires_at) {
-        const expirationDate = new Date(subscription.expires_at);
-        daysRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        isExpiringSoon = daysRemaining <= 7;
-      }
-
-      subscriptionFeedback.showStatus({
-        status: subscription.status as any,
-        toolName: tool.name,
-        daysRemaining,
-        isExpiringSoon,
-        hasAccess: accessStatus.hasAccess
-      });
-    }
-
-    // Navigate to tool
-    window.location.href = `/app/${tool.slug}`;
-  };
-
   return (
-    <Card className={`transition-all duration-200 hover:shadow-md ${accessStatus.hasAccess ? 'hover:scale-[1.02]' : 'opacity-75'} ${className}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+    <Card className={`group relative transition-all duration-500 hover:shadow-2xl ${accessStatus.hasAccess ? 'hover:scale-105 hover:-translate-y-1 bg-gradient-to-br from-white to-blue-50/30' : 'opacity-75 bg-gradient-to-br from-white to-gray-50'} border-2 ${accessStatus.hasAccess ? 'border-blue-200 hover:border-blue-300 hover:border-violet-300' : 'border-gray-200'} overflow-hidden ${className}`} data-testid="tool-card">
+      {/* Enhanced gradient overlay for visual interest */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${accessStatus.hasAccess ? 'from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03]' : 'from-gray-500/[0.02] to-transparent'} pointer-events-none transition-all duration-500`} />
+      
+      <CardHeader className="pb-3 relative z-10">
+        {/* Responsive header layout */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             {tool.icon && (
-              <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                <span className="text-2xl">{tool.icon}</span>
+              <div className={`p-2 sm:p-3 rounded-xl shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-xl flex-shrink-0 ${
+                accessStatus.hasAccess 
+                  ? 'bg-gradient-to-br from-gray-800 via-blue-500 to-blue-600 group-hover:from-blue-600 group-hover:via-violet-500 group-hover:to-violet-600' 
+                  : 'bg-gradient-to-br from-gray-400 to-gray-500'
+              }`}>
+                <span className="text-lg sm:text-2xl text-white">{tool.icon}</span>
               </div>
             )}
-            <div>
-              <CardTitle className="text-lg">{tool.name}</CardTitle>
-              {getStatusBadge()}
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-300 truncate">{tool.name}</CardTitle>
+              <div className="mt-1">
+                {getStatusBadge()}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {!accessStatus.hasAccess && <Lock className="h-4 w-4 text-gray-400" />}
-            <div className="relative group">
+          
+          {/* Status and refresh button */}
+          <div className="flex items-center gap-2 flex-shrink-0 self-start">
+            {!accessStatus.hasAccess && <Lock className="h-4 w-4 text-gray-400 flex-shrink-0" />}
+            <div className="relative group/tooltip">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleRefreshStatus}
                 disabled={validationState.isValidating}
-                className="h-6 w-6 p-0"
+                className={`h-8 w-8 p-0 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg flex-shrink-0 ${
+                  accessStatus.hasAccess 
+                    ? 'hover:border-blue-200' 
+                    : 'hover:bg-gray-100'
+                }`}
               >
-                <RefreshCw className={`h-3 w-3 ${validationState.isValidating ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 ${validationState.isValidating ? 'animate-spin' : ''} ${accessStatus.hasAccess ? 'text-blue-600' : 'text-gray-500'}`} />
               </Button>
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs bg-gray-800 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                Refresh subscription status
+              {/* Tooltip positioning for mobile */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 sm:px-3 py-1 sm:py-1.5 text-xs bg-gray-800 text-white rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 whitespace-nowrap shadow-lg z-50">
+                Refresh status
               </div>
             </div>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 pb-3">
-        <CardDescription className="text-sm leading-relaxed">
+      <CardContent className="pt-0 pb-3 relative z-10">
+        <CardDescription className="text-sm leading-relaxed text-gray-600 font-medium group-hover:text-gray-700 transition-colors duration-300 line-clamp-3">
           {tool.description || 'No description available'}
         </CardDescription>
         
-        {/* Trial/Expiration Info */}
-        <div className="mt-2 space-y-1">
-          {getTrialInfo()}
-          {getExpirationInfo()}
+        {/* Trial/Expiration Info - Stack on mobile for better readability */}
+        <div className="mt-3 space-y-2">
+          <div className="flex flex-col gap-1">
+            {getTrialInfo()}
+            {getExpirationInfo()}
+          </div>
           {getAccessDeniedReason()}
         </div>
 
         {/* Validation Status Info */}
         {validationState.lastValidated && (
-          <div className="text-xs text-gray-400 mt-2">
+          <div className="text-xs text-gray-400 mt-3 font-medium truncate">
             Last verified: {validationState.lastValidated.toLocaleTimeString()}
           </div>
         )}
       </CardContent>
 
-      <CardFooter className="pt-0">
+      <CardFooter className="pt-0 relative z-10">
         {accessStatus.hasAccess ? (
           <Link href={`/app/${tool.slug}`} className="w-full">
             <Button 
-              className="w-full group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+              className="w-full group/btn text-sm sm:text-base py-2 sm:py-3"
               size="sm"
               disabled={validationState.isValidating}
+              onClick={() => {
+                if (!accessStatus.hasAccess) {
+                  subscriptionFeedback.showAccessDenied(
+                    tool.name,
+                    'You need an active subscription to access this tool.'
+                  );
+                  return;
+                }
+
+                // Show status feedback when accessing tool
+                const { subscription } = accessStatus;
+                if (subscription) {
+                  const now = new Date();
+                  let daysRemaining: number | undefined;
+                  let isExpiringSoon = false;
+
+                  if (subscription.status === 'trial' && subscription.trial_ends_at) {
+                    const trialEnd = new Date(subscription.trial_ends_at);
+                    daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    isExpiringSoon = daysRemaining <= 3;
+                  } else if (subscription.status === 'active' && subscription.expires_at) {
+                    const expirationDate = new Date(subscription.expires_at);
+                    daysRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    isExpiringSoon = daysRemaining <= 7;
+                  }
+
+                  subscriptionFeedback.showStatus({
+                    status: subscription.status as 'active' | 'trial' | 'expired' | 'inactive',
+                    toolName: tool.name,
+                    daysRemaining,
+                    isExpiringSoon,
+                    hasAccess: accessStatus.hasAccess
+                  });
+                }
+              }}
             >
               {validationState.isValidating ? (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
+                  <span className="truncate">Verifying...</span>
                 </>
               ) : (
                 <>
-                  Open Tool
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <span className="truncate">Open Tool</span>
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:scale-110 flex-shrink-0" />
                 </>
               )}
             </Button>
@@ -440,12 +451,12 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
         ) : (
           <Button 
             variant="outline" 
-            className="w-full cursor-not-allowed" 
+            className="w-full cursor-not-allowed bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300 text-gray-500 font-semibold text-sm sm:text-base py-2 sm:py-3" 
             disabled
             size="sm"
           >
-            <Lock className="mr-2 h-4 w-4" />
-            Access Required
+            <Lock className="mr-2 h-4 w-4 flex-shrink-0" />
+            <span className="truncate">Access Required</span>
           </Button>
         )}
       </CardFooter>

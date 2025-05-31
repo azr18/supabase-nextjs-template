@@ -4,6 +4,7 @@ import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import {useState} from "react";
 import {createSPASassClient} from "@/lib/supabase/client";
+import { useSearchParams } from 'next/navigation';
 
 export default function VerifyEmailPage() {
     const [email, setEmail] = useState('');
@@ -38,6 +39,8 @@ export default function VerifyEmailPage() {
         }
     }
 
+    const searchParams = useSearchParams();
+
     return (
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <div className="text-center">
@@ -60,13 +63,13 @@ export default function VerifyEmailPage() {
                     </p>
 
                     {error && (
-                        <div className="text-sm text-red-600 bg-red-50 rounded-md p-3">
-                            {error}
+                        <div className="text-sm text-red-600 bg-gradient-to-br from-red-50 via-red-100 to-pink-50 border border-red-200 rounded-md p-3 shadow-lg">
+                            Error: {error}
                         </div>
                     )}
 
                     {success && (
-                        <div className="text-sm text-green-600 bg-green-50 rounded-md p-3">
+                        <div className="text-sm text-blue-600 bg-gradient-to-br from-blue-50 via-blue-100 to-violet-50 border border-blue-200 rounded-md p-3 shadow-lg">
                             Verification email has been resent successfully.
                         </div>
                     )}

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGlobal } from '@/lib/context/GlobalContext';
 import { createSPASassClient } from '@/lib/supabase/client';
@@ -65,101 +66,139 @@ export default function UserSettingsPage() {
     };
 
     return (
-        <div className="space-y-6 p-6">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">User Settings</h1>
-                <p className="text-muted-foreground">
-                    Manage your account settings and preferences
-                </p>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 p-4 sm:p-6">
+            <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+                {/* Page Header */}
+                <div className="text-center space-y-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent">
+                        User Settings
+                    </h1>
+                    <p className="text-lg sm:text-xl text-blue-600/70 max-w-2xl mx-auto leading-relaxed">
+                        Manage your account settings and preferences with world-class security
+                    </p>
+                </div>
 
-            {error && (
-                <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
+                {/* Alert Messages */}
+                {error && (
+                    <Alert variant="destructive" className="bg-gradient-to-br from-red-50 via-red-100 to-pink-50 border-red-200 backdrop-blur-sm shadow-lg">
+                        <AlertDescription className="text-red-700">{error}</AlertDescription>
+                    </Alert>
+                )}
 
-            {success && (
-                <Alert>
-                    <CheckCircle className="h-4 w-4" />
-                    <AlertDescription>{success}</AlertDescription>
-                </Alert>
-            )}
+                {success && (
+                    <Alert className="bg-gradient-to-br from-blue-50 via-blue-100 to-violet-50 border-blue-200 backdrop-blur-sm shadow-lg">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <AlertDescription className="text-blue-700">{success}</AlertDescription>
+                    </Alert>
+                )}
 
-            <div className="grid gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" />
+                {/* Settings Cards Grid */}
+                <div className="grid gap-6 sm:gap-8 lg:grid-cols-1 max-w-3xl mx-auto">
+                    
+                    {/* User Details Card */}
+                    <Card className="group relative transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 hover:border-violet-300 overflow-hidden">
+                        {/* Enhanced gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+                        
+                        <CardHeader className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 text-white">
+                            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                                <div className="p-2 bg-white/20 rounded-xl shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                    <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                                </div>
                                 User Details
                             </CardTitle>
-                            <CardDescription>Your account information</CardDescription>
+                            <CardDescription className="text-blue-100 text-sm sm:text-base">
+                                Your account information and profile details
+                            </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">User ID</label>
-                                <p className="mt-1 text-sm">{user?.id}</p>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Email</label>
-                                <p className="mt-1 text-sm">{user?.email}</p>
+                        <CardContent className="space-y-6 p-6 sm:p-8">
+                            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label className="text-xs sm:text-sm font-semibold text-blue-700 uppercase tracking-wider">User ID</label>
+                                    <p className="text-sm sm:text-lg font-mono text-gray-700 bg-blue-50/50 p-3 rounded-lg border border-blue-200 truncate">{user?.id}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs sm:text-sm font-semibold text-blue-700 uppercase tracking-wider">Email Address</label>
+                                    <p className="text-sm sm:text-lg text-gray-700 bg-blue-50/50 p-3 rounded-lg border border-blue-200 truncate">{user?.email}</p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card id="password">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Key className="h-5 w-5" />
+                    {/* Change Password Card */}
+                    <Card id="password" className="group relative transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 hover:border-violet-300 overflow-hidden">
+                        {/* Enhanced gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+                        
+                        <CardHeader className="bg-gradient-to-r from-blue-600 via-violet-500 to-violet-600 text-white">
+                            <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                                <div className="p-2 bg-white/20 rounded-xl shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                    <Key className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                                </div>
                                 Change Password
                             </CardTitle>
-                            <CardDescription>Update your account password for enhanced security</CardDescription>
+                            <CardDescription className="text-violet-100 text-sm sm:text-base">
+                                Update your account password for enhanced security
+                            </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handlePasswordChange} className="space-y-4">
-                                <div>
-                                    <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                                        New Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="new-password"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm"
-                                        required
-                                        minLength={6}
-                                        placeholder="Enter your new password"
-                                    />
+                        <CardContent className="p-6 sm:p-8">
+                            <form onSubmit={handlePasswordChange} className="space-y-6">
+                                <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <label htmlFor="new-password" className="block text-xs sm:text-sm font-semibold text-blue-700 uppercase tracking-wider">
+                                            New Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            id="new-password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            className="w-full rounded-xl border-2 border-blue-200 px-3 sm:px-4 py-2 sm:py-3 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm sm:text-lg"
+                                            required
+                                            minLength={6}
+                                            placeholder="Enter your new password"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label htmlFor="confirm-password" className="block text-xs sm:text-sm font-semibold text-blue-700 uppercase tracking-wider">
+                                            Confirm New Password
+                                        </label>
+                                        <input
+                                            type="password"
+                                            id="confirm-password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="w-full rounded-xl border-2 border-blue-200 px-3 sm:px-4 py-2 sm:py-3 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all duration-300 bg-white/80 backdrop-blur-sm text-sm sm:text-lg"
+                                            required
+                                            minLength={6}
+                                            placeholder="Confirm your new password"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                                        Confirm New Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="confirm-password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm"
-                                        required
-                                        minLength={6}
-                                        placeholder="Confirm your new password"
-                                    />
-                                </div>
-                                <button
+                                <Button
                                     type="submit"
+                                    variant="secondary"
                                     disabled={loading || !newPassword || !confirmPassword}
-                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full flex justify-center items-center gap-2 py-3 sm:py-4 px-4 sm:px-6 text-sm sm:text-lg"
                                 >
-                                    {loading ? 'Updating...' : 'Update Password'}
-                                </button>
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span className="truncate">Updating Password...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Key className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                                            <span className="truncate">Update Password</span>
+                                        </>
+                                    )}
+                                </Button>
                             </form>
                         </CardContent>
                     </Card>
 
-                    <div id="mfa">
+                    {/* Two-Factor Authentication Card */}
+                    <div id="mfa" className="transition-all duration-500 hover:scale-105 hover:-translate-y-2">
                         <MFASetup
                             onStatusChange={() => {
                                 setSuccess('Two-factor authentication settings updated successfully');

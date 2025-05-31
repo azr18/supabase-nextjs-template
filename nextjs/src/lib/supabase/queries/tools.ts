@@ -375,18 +375,15 @@ export async function checkToolsServiceHealth(): Promise<{
     const supabase = createSPAClient();
     
     // Simple query to check if service is responsive
-    const result: PostgrestResponse<{ id: string }> = await withTimeout(
-      supabase.from('tools').select('id').limit(1),
-      3000
-    );
+    const { error } = await supabase.from('tools').select('id').limit(1);
     
     const responseTime = Date.now() - startTime;
     
-    if (result.error) {
+    if (error) {
       return {
         healthy: false,
         responseTime,
-        error: result.error.message
+        error: error.message
       };
     }
     

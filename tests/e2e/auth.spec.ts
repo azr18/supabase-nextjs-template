@@ -6,7 +6,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/auth/login');
     
     // Check if page loads properly
-    await expect(page).toHaveTitle(/Invoice Reconciler SaaS Platform/);
+    await expect(page).toHaveTitle(/My Agent/);
     
     // Check for Google OAuth section
     await expect(page.locator('h3:has-text("Quick Sign In")')).toBeVisible();

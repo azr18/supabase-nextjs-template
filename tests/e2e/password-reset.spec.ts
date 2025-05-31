@@ -174,7 +174,7 @@ test.describe('Password Reset Flow', () => {
     await page.goto('/auth/forgot-password');
     
     // Verify consistent branding elements
-    await expect(page.getByRole('heading', { name: 'Invoice Reconciler SaaS Platform' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Agent' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Back to Homepage' })).toBeVisible();
     
     // Verify testimonials section is present
@@ -189,7 +189,7 @@ test.describe('Password Reset Flow', () => {
     await page.goto('/auth/reset-password');
     
     // Verify consistent branding elements
-    await expect(page.getByRole('heading', { name: 'Invoice Reconciler SaaS Platform' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Agent' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Back to Homepage' })).toBeVisible();
     
     // Verify testimonials section is present

@@ -120,9 +120,9 @@ export function SubscriptionStatusSummary({
     switch (status) {
       case 'excellent':
       case 'good':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-blue-600" />;
       case 'partial':
-        return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
+        return <AlertTriangle className="h-5 w-5 text-violet-600" />;
       case 'poor':
         return <XCircle className="h-5 w-5 text-red-600" />;
       default:
@@ -169,7 +169,7 @@ export function SubscriptionStatusSummary({
             <CardDescription className="flex items-center gap-2">
               <span>{overallStatus.message}</span>
               {summary.expiringSoon > 0 && (
-                <Badge variant="outline" className="text-orange-600 border-orange-200">
+                <Badge variant="outline" className="text-orange-600 border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all duration-300">
                   <Clock className="h-3 w-3 mr-1" />
                   {summary.expiringSoon} expiring soon
                 </Badge>
@@ -198,39 +198,39 @@ export function SubscriptionStatusSummary({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Active Subscriptions */}
-            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-100">
+            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-300 hover:scale-105">
               <div className="flex items-center justify-center mb-1">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-blue-600" />
               </div>
-              <div className="text-2xl font-bold text-green-600">{summary.active}</div>
-              <div className="text-xs text-green-700">Active</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 bg-clip-text text-transparent">{summary.active}</div>
+              <div className="text-xs text-blue-700 font-medium">Active</div>
             </div>
 
             {/* Trial Subscriptions */}
-            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="text-center p-3 bg-gradient-to-br from-violet-50 to-violet-100 rounded-lg border border-violet-200 hover:from-violet-100 hover:to-violet-200 transition-all duration-300 hover:scale-105">
               <div className="flex items-center justify-center mb-1">
-                <Zap className="h-5 w-5 text-blue-600" />
+                <Zap className="h-5 w-5 text-violet-600" />
               </div>
-              <div className="text-2xl font-bold text-blue-600">{summary.trial}</div>
-              <div className="text-xs text-blue-700">Trial</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 via-blue-600 to-violet-500 bg-clip-text text-transparent">{summary.trial}</div>
+              <div className="text-xs text-violet-700 font-medium">Trial</div>
             </div>
 
             {/* Expired/Inactive */}
-            <div className="text-center p-3 bg-red-50 rounded-lg border border-red-100">
+            <div className="text-center p-3 bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 hover:from-red-100 hover:to-red-200 transition-all duration-300 hover:scale-105">
               <div className="flex items-center justify-center mb-1">
                 <XCircle className="h-5 w-5 text-red-600" />
               </div>
               <div className="text-2xl font-bold text-red-600">{summary.expired + summary.inactive}</div>
-              <div className="text-xs text-red-700">Expired/Inactive</div>
+              <div className="text-xs text-red-700 font-medium">Expired/Inactive</div>
             </div>
 
             {/* No Access */}
-            <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <div className="text-center p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:from-gray-100 hover:to-gray-200 transition-all duration-300 hover:scale-105">
               <div className="flex items-center justify-center mb-1">
                 <AlertTriangle className="h-5 w-5 text-gray-600" />
               </div>
               <div className="text-2xl font-bold text-gray-600">{summary.noAccess}</div>
-              <div className="text-xs text-gray-700">No Access</div>
+              <div className="text-xs text-gray-700 font-medium">No Access</div>
             </div>
           </div>
         )}
@@ -242,18 +242,18 @@ export function SubscriptionStatusSummary({
               <span>Total Tools: {summary.total}</span>
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"></div>
                   Accessible: {summary.active + summary.trial}
                 </span>
                 <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full"></div>
                   Unavailable: {summary.expired + summary.inactive + summary.noAccess}
                 </span>
               </div>
             </div>
             
             {summary.expiringSoon > 0 && (
-              <div className="mt-2 p-2 bg-orange-50 rounded border border-orange-200">
+              <div className="mt-2 p-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded border border-orange-200">
                 <div className="flex items-center gap-2 text-orange-700">
                   <Clock className="h-4 w-4" />
                   <span className="text-sm font-medium">

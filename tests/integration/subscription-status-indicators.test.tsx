@@ -3,9 +3,10 @@
  * Task 5.5: Add subscription status indicators to dashboard UI
  */
 
+import React from 'react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import userEvent from '@testing-library/user-event';
 import { SubscriptionStatusSummary } from '@/components/Dashboard/SubscriptionStatusSummary';
 import { SubscriptionStatusBadge } from '@/components/Dashboard/SubscriptionStatusBadge';
 import { ToolWithSubscription } from '@/lib/supabase/queries/tools';
@@ -15,7 +16,7 @@ const mockActiveSubscription = {
   id: '1',
   user_id: 'user1',
   tool_id: 'tool1',
-  status: 'active' as const,
+  status: 'active',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
@@ -26,7 +27,7 @@ const mockTrialSubscription = {
   id: '2',
   user_id: 'user1',
   tool_id: 'tool2',
-  status: 'trial' as const,
+  status: 'trial',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   expires_at: null,
@@ -37,7 +38,7 @@ const mockExpiredSubscription = {
   id: '3',
   user_id: 'user1',
   tool_id: 'tool3',
-  status: 'expired' as const,
+  status: 'expired',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   expires_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
@@ -48,7 +49,7 @@ const mockInactiveSubscription = {
   id: '4',
   user_id: 'user1',
   tool_id: 'tool4',
-  status: 'inactive' as const,
+  status: 'inactive',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   expires_at: null,
@@ -59,7 +60,7 @@ const mockExpiringSoonSubscription = {
   id: '5',
   user_id: 'user1',
   tool_id: 'tool5',
-  status: 'active' as const,
+  status: 'active',
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now

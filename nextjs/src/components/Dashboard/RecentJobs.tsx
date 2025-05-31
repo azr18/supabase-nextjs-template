@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Clock, AlertCircle, CheckCircle, PlayCircle, RefreshCw, Loader2, WifiOff, AlertTriangle } from 'lucide-react';
+import { Download, Clock, AlertCircle, CheckCircle, PlayCircle, RefreshCw, Loader2, WifiOff, AlertTriangle, X } from 'lucide-react';
 import { 
   getRecentJobsForUser, 
   JobWithToolInfo, 
@@ -200,17 +200,17 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'processing':
-        return <PlayCircle className="h-4 w-4 text-blue-600" />;
+        return <CheckCircle className="h-4 w-4 text-blue-600" />;
       case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'processing':
+        return <Clock className="h-4 w-4 text-violet-600" />;
       case 'failed':
+      case 'error':
         return <AlertCircle className="h-4 w-4 text-red-600" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
+        return <Clock className="h-4 w-4 text-violet-600" />;
     }
   };
 
@@ -270,16 +270,15 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
     if (!error) return null;
 
     const getErrorIcon = () => {
-      switch (error.type) {
-        case JobsErrorType.NETWORK:
-          return <WifiOff className="h-12 w-12 text-orange-500 mx-auto" />;
-        case JobsErrorType.AUTH:
-          return <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />;
-        case JobsErrorType.SERVER:
-          return <AlertCircle className="h-12 w-12 text-blue-500 mx-auto" />;
-        default:
-          return <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />;
+      if (error.type === JobsErrorType.NETWORK) {
+        return <AlertCircle className="h-12 w-12 text-violet-500 mx-auto" />;
       }
+      
+      if (error.type === JobsErrorType.PERMISSION) {
+        return <AlertCircle className="h-12 w-12 text-blue-500 mx-auto" />;
+      }
+      
+      return <AlertCircle className="h-12 w-12 text-blue-500 mx-auto" />;
     };
 
     const getActionButton = () => {
@@ -324,14 +323,14 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
           {getErrorIcon()}
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-900">{error.message}</p>
-            <p className="text-xs text-gray-600">{error.details}</p>
+            <p className="text-xs text-blue-600">{error.details}</p>
             {retryAttempt > 0 && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-blue-500">
                 Retry attempt: {retryAttempt}
               </p>
             )}
             {lastUpdateTime && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-blue-500">
                 Last successful update: {lastUpdateTime.toLocaleTimeString()}
               </p>
             )}
@@ -343,6 +342,7 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleErrorAction('refresh')}
+                className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300"
               >
                 Refresh Page
               </Button>
@@ -355,28 +355,33 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
+      <Card className={`group transition-all duration-500 hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30 border-2 border-blue-200 hover:border-blue-300 overflow-hidden ${className}`}>
+        {/* Gradient overlay for visual interest */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+        
+        <CardHeader className="relative z-10">
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Recent Jobs
+            <div className="p-2 rounded-lg bg-gradient-to-br from-gray-800 via-blue-500 to-blue-600 shadow-lg">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent font-bold">Recent Jobs</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="animate-pulse">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center justify-between p-4 border-2 border-blue-100 rounded-xl bg-gradient-to-r from-blue-50/50 to-violet-50/50 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-4 bg-gradient-to-r from-blue-200 to-violet-200 rounded"></div>
                     <div className="space-y-2">
-                      <div className="h-4 w-32 bg-gray-200 rounded"></div>
-                      <div className="h-3 w-24 bg-gray-200 rounded"></div>
+                      <div className="h-4 w-32 bg-gradient-to-r from-blue-200 to-violet-200 rounded"></div>
+                      <div className="h-3 w-24 bg-gradient-to-r from-blue-200 to-violet-200 rounded"></div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-                    <div className="h-8 w-20 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-16 bg-gradient-to-r from-blue-200 to-violet-200 rounded-full"></div>
+                    <div className="h-8 w-20 bg-gradient-to-r from-blue-200 to-violet-200 rounded"></div>
                   </div>
                 </div>
               </div>
@@ -389,12 +394,17 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
 
   if (error) {
     return (
-      <Card className={className}>
-        <CardHeader>
+      <Card className={`group transition-all duration-500 hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30 border-2 border-blue-200 hover:border-blue-300 overflow-hidden ${className}`}>
+        {/* Gradient overlay for visual interest */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+        
+        <CardHeader className="relative z-10">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recent Jobs
+              <div className="p-2 rounded-lg bg-gradient-to-br from-gray-800 via-blue-500 to-blue-600 shadow-lg">
+                <Clock className="h-5 w-5 text-white" />
+              </div>
+              <span className="bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent font-bold">Recent Jobs</span>
             </CardTitle>
             <div className="flex items-center gap-2">
               {!isOnline && <WifiOff className="h-4 w-4 text-orange-500" />}
@@ -403,7 +413,7 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
                 size="sm"
                 onClick={handleRetry}
                 disabled={loading}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-violet-50 hover:border-blue-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 Retry
@@ -411,7 +421,7 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           {renderErrorState()}
         </CardContent>
       </Card>
@@ -420,21 +430,30 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
 
   if (jobs.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
+      <Card className={`group transition-all duration-500 hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30 border-2 border-blue-200 hover:border-blue-300 overflow-hidden ${className}`}>
+        {/* Gradient overlay for visual interest */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+        
+        <CardHeader className="relative z-10">
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Recent Jobs
+            <div className="p-2 rounded-lg bg-gradient-to-br from-gray-800 via-blue-500 to-blue-600 shadow-lg">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent font-bold">Recent Jobs</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <div className="flex items-center justify-center p-8 text-center">
-            <div className="space-y-2">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto" />
-              <p className="text-sm text-gray-600">No recent jobs found</p>
-              <p className="text-xs text-gray-500">
-                Start using our tools to see your job history here
-              </p>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-violet-100 w-fit mx-auto">
+                <Clock className="h-12 w-12 text-blue-600 mx-auto" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 font-medium">No recent jobs found</p>
+                <p className="text-xs text-blue-600">
+                  Start using our tools to see your job history here
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -443,12 +462,17 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
+    <Card className={`group transition-all duration-500 hover:shadow-xl bg-gradient-to-br from-white to-blue-50/30 border-2 border-blue-200 hover:border-blue-300 overflow-hidden ${className}`}>
+      {/* Enhanced gradient overlay for visual interest */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-violet-500/[0.02] to-purple-500/[0.01] group-hover:from-blue-500/[0.05] group-hover:via-violet-500/[0.05] group-hover:to-purple-500/[0.03] pointer-events-none transition-all duration-500" />
+      
+      <CardHeader className="relative z-10">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Recent Jobs
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-gray-800 via-blue-500 to-blue-600 shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-110">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-primary via-blue-600 to-violet-600 bg-clip-text text-transparent font-bold text-lg">Recent Jobs</span>
           </CardTitle>
           <div className="flex items-center gap-2">
             {!isOnline && <WifiOff className="h-4 w-4 text-orange-500" />}
@@ -458,7 +482,7 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
                 size="sm"
                 onClick={handleRetry}
                 disabled={loading}
-                className="flex items-center gap-2 text-xs"
+                className="flex items-center gap-2 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 hover:scale-105"
               >
                 <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -467,31 +491,29 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         {/* Download Error Alert */}
         {downloadError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+          <div className="mb-4 p-3 bg-gradient-to-r from-red-50 via-red-100 to-pink-50 border-2 border-red-200 rounded-xl flex items-start gap-2 shadow-sm">
             <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm text-red-700">{downloadError}</p>
+              <p className="text-sm text-red-700 font-medium">{downloadError}</p>
+              <button
+                onClick={() => setDownloadError(null)}
+                className="h-auto p-1 hover:bg-red-100 text-red-600 transition-colors duration-300"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setDownloadError(null)}
-              className="h-auto p-1 hover:bg-red-100"
-            >
-              ×
-            </Button>
           </div>
         )}
 
         {/* Network Status Warning */}
         {!isOnline && (
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2">
-            <WifiOff className="h-4 w-4 text-yellow-600" />
-            <span className="text-sm text-yellow-700">
-              You're offline. Downloads and updates may not work.
+          <div className="mb-4 p-3 bg-gradient-to-r from-violet-50 via-blue-50 to-blue-100 border-2 border-violet-200 rounded-xl flex items-center gap-2 shadow-sm">
+            <WifiOff className="h-4 w-4 text-violet-600" />
+            <span className="text-sm text-violet-700 font-medium">
+              You're currently offline. Job downloads may not be available.
             </span>
           </div>
         )}
@@ -505,56 +527,68 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
             return (
               <div 
                 key={job.id} 
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="group/job flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 p-3 sm:p-4 border-2 border-blue-100 rounded-xl hover:border-blue-200 hover:border-violet-200 bg-gradient-to-r from-blue-50/30 to-violet-50/30 hover:from-blue-50/50 hover:to-violet-50/50 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {getStatusIcon(job.status)}
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-100 to-violet-100 group-hover/job:shadow-md transition-all duration-300 flex-shrink-0">
+                    {getStatusIcon(job.status)}
+                  </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium truncate">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                      <p className="text-sm font-semibold truncate text-gray-900 group-hover/job:text-blue-700 transition-colors duration-300">
                         {job.job_name}
                       </p>
                       <Badge 
                         variant={statusInfo.variant}
-                        className={statusInfo.className}
+                        className={`${statusInfo.className} font-medium border-0 shadow-sm hover:shadow-md transition-shadow duration-300 w-fit`}
                       >
                         {statusInfo.label}
                       </Badge>
                     </div>
                     
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>{airlineName}</span>
-                      <span>{getRelativeTime(job.created_at)}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-blue-600 font-medium">
+                      <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent truncate">{airlineName}</span>
+                      <span className="truncate">{getRelativeTime(job.created_at)}</span>
                       {job.actual_duration_minutes && (
-                        <span>Duration: {formatDuration(job.actual_duration_minutes)}</span>
+                        <span className="truncate">Duration: {formatDuration(job.actual_duration_minutes)}</span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center sm:ml-4">
                   {job.status === 'completed' && job.result_file_path && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDownload(job)}
                       disabled={isDownloading || !isOnline}
-                      className="h-8 px-2"
+                      className="h-8 px-3 hover:scale-105 hover:shadow-lg text-xs sm:text-sm"
                       title={!isOnline ? "Cannot download while offline" : "Download result file"}
                     >
                       {isDownloading ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin mr-1 sm:mr-0" />
+                          <span className="sm:hidden">Downloading...</span>
+                        </>
                       ) : (
-                        <Download className="h-3 w-3" />
+                        <>
+                          <Download className="h-3 w-3 sm:mr-0 mr-1" />
+                          <span className="sm:hidden">Download</span>
+                        </>
                       )}
                     </Button>
                   )}
                   
                   {job.tool && (
                     <Link href={`/app/${job.tool.slug}`}>
-                      <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                        Open Tool
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-3 text-xs sm:text-sm text-blue-600 hover:scale-105 font-semibold"
+                      >
+                        <span className="truncate">Open Tool</span>
                       </Button>
                     </Link>
                   )}
@@ -564,10 +598,13 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
           })}
         </div>
 
-        {jobs.length >= limit && (
-          <div className="mt-4 pt-3 border-t text-center">
+        {jobs.length > 5 && (
+          <div className="mt-6 pt-4 border-t-2 border-blue-100 text-center">
             <Link href="/app/jobs">
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+              >
                 View All Jobs
               </Button>
             </Link>

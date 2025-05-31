@@ -226,18 +226,18 @@ export default function CallToAction() {
               
               {/* Success Message */}
               {formState.success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 via-blue-100 to-violet-50 border border-blue-200 rounded-lg flex items-center gap-3 shadow-lg">
+                  <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
                   <div>
-                    <h5 className="font-semibold text-green-800">{t('cta.form.success.title')}</h5>
-                    <p className="text-sm text-green-700">{t('cta.form.success.message')}</p>
+                    <h5 className="font-semibold text-blue-800">{t('cta.form.success.title')}</h5>
+                    <p className="text-sm text-blue-700">{t('cta.form.success.message')}</p>
                   </div>
                 </div>
               )}
 
               {/* Error Message */}
               {formState.error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
+                <div className="bg-gradient-to-br from-red-50 via-red-100 to-pink-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3 shadow-lg">
                   <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                   <div>
                     <h5 className="text-red-800 font-medium">{t('cta.form.error.title')}</h5>
@@ -396,24 +396,64 @@ export default function CallToAction() {
           </div>
         </div>
 
-        {/* Final Encouragement */}
+        {/* Final Encouragement Section */}
         <div className="text-center mt-16">
-          <p className="text-lg text-muted-foreground mb-4">
-            {t('cta.finalEncouragement.text')}
-          </p>
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-gradient-to-r from-primary via-blue-600 to-violet-600 rounded-full"></div>
-              {t('cta.finalEncouragement.stats.industries')}
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-gradient-to-r from-primary via-blue-600 to-violet-600 rounded-full"></div>
-              {t('cta.finalEncouragement.stats.satisfaction')}
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-gradient-to-r from-primary via-blue-600 to-violet-600 rounded-full"></div>
-              {t('cta.finalEncouragement.stats.support')}
-            </span>
+          <div className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 rounded-2xl p-8 md:p-12 text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Your AI Transformation Starts Here
+            </h3>
+            <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
+              Every successful AI implementation begins with understanding your unique business challenges and opportunities. 
+              Our expert team specializes in creating custom automation solutions that transform operations across marketing, sales, and finance.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-violet-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Free Discovery</h4>
+                <p className="text-blue-100 text-sm">
+                  No commitment consultation to explore your automation opportunities
+                </p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <ArrowRight className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Custom Strategy</h4>
+                <p className="text-blue-100 text-sm">
+                  Tailored roadmap designed specifically for your business processes
+                </p>
+              </div>
+              
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                  <Headphones className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Expert Guidance</h4>
+                <p className="text-blue-100 text-sm">
+                  Ongoing support from implementation through optimization
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-blue-100 mb-6">
+                Ready to discover how AI can transform your business operations?
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-white text-gray-800 hover:bg-gray-100 px-8 py-3 text-lg font-semibold rounded-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+                asChild
+              >
+                <a href="https://calendly.com/ariel-r08/free-online-ai-consultation" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  Schedule Your Free Consultation
+                  <ArrowRight className="h-5 w-5" />
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
