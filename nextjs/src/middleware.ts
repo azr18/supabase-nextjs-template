@@ -1,11 +1,14 @@
-import { type NextRequest, NextResponse } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-import { 
-  isProtectedRoute, 
-  getRequiredToolSlug, 
-  createMiddlewareSupabaseClient,
-  checkUserToolAccess 
-} from '@/lib/auth/subscriptions'
+import { createSubscriptionMiddleware } from '@/lib/auth/subscription-middleware'
+
+// Create subscription validation middleware with default configuration
+const validateSubscription = createSubscriptionMiddleware({
+  unauthorizedRedirect: '/app',
+  loginRedirect: '/auth/login',
+  includeErrorDetails: true,
+  enableLogging: process.env.NODE_ENV === 'development'
+})
 
 export async function middleware(request: NextRequest) {
   // First, handle session management
@@ -16,61 +19,11 @@ export async function middleware(request: NextRequest) {
     return sessionResponse
   }
 
-  const pathname = request.nextUrl.pathname
-
-  // Skip subscription checks for non-protected routes
-  if (!isProtectedRoute(pathname)) {
-    return sessionResponse
-  }
-
-  // For protected routes, check subscription access
-  const requiredToolSlug = getRequiredToolSlug(pathname)
-  if (!requiredToolSlug) {
-    // This shouldn't happen if isProtectedRoute is correctly implemented
-    console.error(`Protected route ${pathname} has no associated tool slug`)
-    return sessionResponse
-  }
-
-  try {
-    // Create a fresh Supabase client for subscription checking
-    const supabase = createMiddlewareSupabaseClient(request)
-    
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      // User not authenticated - redirect to login
-      const url = request.nextUrl.clone()
-      url.pathname = '/auth/login'
-      url.searchParams.set('redirectTo', pathname)
-      return NextResponse.redirect(url)
-    }
-
-    // Check if user has access to the required tool
-    const accessCheck = await checkUserToolAccess(supabase, user.id, requiredToolSlug)
-    
-    if (!accessCheck.hasAccess) {
-      // User doesn't have access - redirect to dashboard with error message
-      const url = request.nextUrl.clone()
-      url.pathname = '/app'
-      url.searchParams.set('error', 'subscription_required')
-      url.searchParams.set('tool', requiredToolSlug)
-      url.searchParams.set('reason', accessCheck.reason || 'Access denied')
-      return NextResponse.redirect(url)
-    }
-
-    // User has access, proceed with the original response
-    return sessionResponse
-
-  } catch (error) {
-    console.error('Error in subscription middleware:', error)
-    
-    // On error, redirect to dashboard with generic error
-    const url = request.nextUrl.clone()
-    url.pathname = '/app'
-    url.searchParams.set('error', 'access_check_failed')
-    return NextResponse.redirect(url)
-  }
+  // Apply subscription validation middleware
+  const subscriptionResult = await validateSubscription(request, sessionResponse)
+  
+  // Return the subscription middleware result
+  return subscriptionResult.response
 }
 
 export const config = {

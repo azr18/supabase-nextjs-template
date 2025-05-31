@@ -7,6 +7,7 @@ import { CalendarDays, Settings, Wrench, AlertCircle, RefreshCw, WifiOff } from 
 import Link from 'next/link';
 import { ToolCard } from '@/components/Dashboard/ToolCard';
 import { RecentJobs } from '@/components/Dashboard/RecentJobs';
+import { SubscriptionStatusSummary } from '@/components/Dashboard/SubscriptionStatusSummary';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { 
   WelcomeSkeleton, 
@@ -187,6 +188,16 @@ export default function DashboardContent() {
         fetchTools(true);
     };
 
+    const handleSubscriptionUpdate = useCallback((toolId: string, subscription: any) => {
+        setTools(prevTools => 
+            prevTools.map(tool => 
+                tool.id === toolId 
+                    ? { ...tool, subscription }
+                    : tool
+            )
+        );
+    }, []);
+
     const handleErrorAction = (action: string) => {
         switch (action) {
             case 'retry':
@@ -356,6 +367,26 @@ export default function DashboardContent() {
                     )}
                 </ErrorBoundary>
 
+                {/* Subscription Status Summary */}
+                <ErrorBoundary
+                    fallback={
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="flex items-center gap-2 text-amber-600">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <span className="text-sm">Unable to load subscription status</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    }
+                >
+                    <SubscriptionStatusSummary 
+                        tools={tools}
+                        isLoading={toolsLoading}
+                        onRefresh={handleRetryTools}
+                    />
+                </ErrorBoundary>
+
                 {/* My Tools Section with Enhanced Error Handling */}
                 <Card>
                     <CardHeader>
@@ -420,7 +451,7 @@ export default function DashboardContent() {
                                             </Card>
                                         }
                                     >
-                                        <ToolCard tool={tool} />
+                                        <ToolCard tool={tool} onSubscriptionUpdate={handleSubscriptionUpdate} />
                                     </ErrorBoundary>
                                 ))}
                             </div>

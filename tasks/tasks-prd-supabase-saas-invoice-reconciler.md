@@ -40,11 +40,12 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `nextjs/src/components/LandingPage/Process.tsx` - Enhanced Process section component with brainpool.ai-inspired design featuring sophisticated step number boxes instead of boring circles, meaningful icons for each step (Search for discovery, Target for scoping, FlaskConical for PoC, Code for MVP, Settings for maintenance), modern visual hierarchy with phase badges, enhanced glow effects, hover animations, gradient flow lines, and improved timeline section with glass morphism cards
 - `nextjs/src/components/LandingPage/CallToAction.tsx` - CTA section component with comprehensive contact form, phone number field, improved labeling for AI consultation requests, form submission handling, success/error states, and lead capture functionality
 - `nextjs/src/app/app/page.tsx` - Redesigned customer dashboard
-- `nextjs/src/components/Dashboard/ToolCard.tsx` - Tool access card component
+- `nextjs/src/components/Dashboard/ToolCard.tsx` - Enhanced professional tool access card component displaying individual tools with comprehensive subscription status validation, real-time status checking, visual badges (active, trial, expired, no access), navigation buttons, trial/expiration countdowns, manual refresh capability, error handling with fallback, hover tooltips, loading states, and responsive design using shadcn/ui components and blue gradient theme
 - `nextjs/src/components/Dashboard/RecentJobs.tsx` - Recent jobs display component
 - `nextjs/src/components/AppLayout.tsx` - Updated navigation removing demo links
 - `nextjs/src/middleware.ts` - Enhanced middleware for subscription-based route protection
 - `nextjs/src/lib/auth/subscriptions.ts` - Subscription checking utilities and route protection functions for middleware-level access control
+- `nextjs/src/lib/auth/subscription-middleware.ts` - Modular subscription validation middleware with configurable options, error handling, multi-tool support, and composable functions for protected route access control
 - `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main invoice reconciler tool page
 - `nextjs/src/components/InvoiceReconciler/AirlineSelector.tsx` - Airline dropdown selector component
 - `nextjs/src/components/InvoiceReconciler/InvoiceManager.tsx` - Saved invoices management component
@@ -93,7 +94,6 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `test-results/performance-seo-report.md` - Detailed performance and SEO testing report with executive summary, test results breakdown, optimization recommendations, and business impact analysis
 - `test-results/lighthouse-summary.json` - Automated Lighthouse audit results summary for performance tracking and optimization monitoring
 - `nextjs/src/components/AuthAwareButtons.tsx` - Enhanced authentication buttons component with "My Agent" blue gradient styling, improved button layouts for nav and hero sections, consistent hover effects and transitions
-- `nextjs/src/components/Dashboard/ToolCard.tsx` - Professional tool access card component displaying individual tools with subscription status indicators (active, trial, expired, no access), visual badges, navigation buttons, trial/expiration countdowns, hover effects, and responsive design using shadcn/ui components and blue gradient theme
 - `nextjs/src/lib/supabase/queries/tools.ts` - Comprehensive database query utilities for tools and subscriptions using Supabase MCP, including functions for fetching tools with user subscription data, checking tool access permissions, and managing subscription status validation
 - `tests/integration/tools-queries.test.ts` - Integration tests for tools database queries and subscription management functions
 - `tests/e2e/dashboard-toolcard.spec.ts` - Playwright end-to-end tests for ToolCard component functionality including subscription states, navigation, responsive design, and accessibility testing
@@ -108,9 +108,12 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `nextjs/src/components/Dashboard/LoadingSkeletons.tsx` - Specialized skeleton components for dashboard sections including WelcomeSkeleton, ToolCardSkeleton, ToolsSectionSkeleton, RecentJobsSkeleton, AccountSettingsSkeleton, and DashboardSkeleton
 - `nextjs/src/components/ErrorBoundary.tsx` - React error boundary component for component-level error catching with development/production modes, retry options, and custom fallback support
 - `tests/e2e/dashboard-loading-states.spec.ts` - Comprehensive Playwright tests for dashboard loading states covering skeleton display, independent section loading, error states, retry functionality, download indicators, empty states, network errors, and layout maintenance
+- `docs/admin-subscription-management-guide.md` - Comprehensive admin documentation for managing user subscriptions via Supabase Studio including step-by-step instructions, database schema overview, common tasks, troubleshooting guide, security considerations, and best practices for subscription administration
 
 ### User Settings Integration (Task 4.11)
 - `nextjs/src/app/app/page.tsx` - Enhanced dashboard page with improved Account Settings section featuring three quick access cards (User Settings, Change Password, Security MFA), account status summary, and direct navigation links with anchor fragments for seamless user experience
+- `nextjs/src/components/Dashboard/SubscriptionStatusSummary.tsx` - Comprehensive subscription status summary component for dashboard displaying overall subscription health with visual breakdown across 4 categories (Active, Trial, Expired/Inactive, No Access), expiring soon alerts, real-time refresh functionality, loading states, and responsive grid layout
+- `nextjs/src/components/Dashboard/SubscriptionStatusBadge.tsx` - Reusable subscription status badge component with multiple variants (default, compact, detailed), color-coded status indicators, time information for expiring subscriptions, and accessibility features for use throughout the dashboard
 - `nextjs/src/app/app/user-settings/page.tsx` - Enhanced user settings page with anchor ID support for password and MFA sections, smooth scrolling navigation, improved form validation with minimum password length requirements, better accessibility with proper labeling and placeholders
 - `nextjs/src/components/AppLayout.tsx` - Improved navigation layout with enhanced sidebar highlighting for user settings routes, updated user dropdown menu with comprehensive quick access options (Account Settings, Change Password, Security MFA), smooth transitions and better visual feedback for navigation states
 - `tests/e2e/dashboard-user-settings-navigation.spec.ts` - Comprehensive Playwright tests for user settings integration covering dashboard Account Settings section visibility, navigation from dashboard cards, direct anchor navigation to password and MFA sections, header dropdown navigation, sidebar highlighting, and responsive design validation
@@ -277,7 +280,7 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 3.13.2 Redesign Process section with brainpool.ai-inspired sophisticated design, replacing boring numbered circles with 3D-style boxes, implementing meaningful icons for each step (Search for discovery, Target for scoping, FlaskConical for PoC, Code for MVP, Settings for maintenance), adding modern visual hierarchy with phase badges, enhanced glow effects, hover animations, gradient flow lines, and improved timeline section with glass morphism cards
   - [x] 3.14 Create Playwright visual regression tests for landing page components, then demonstrate responsive design for user acceptance
 
-- [ ] 4.0 Customer Dashboard & Navigation Implementation
+- [x] 4.0 Customer Dashboard & Navigation Implementation
   - [x] 4.1 Remove existing storage demo page and related components
   - [x] 4.2 Remove existing table demo page and related components
   - [x] 4.3 Update AppLayout component to remove demo navigation links
@@ -293,17 +296,17 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 4.13 Create Playwright tests for dashboard navigation and tool access interactions
   - [x] 4.14 Create Playwright tests for dashboard loading states and error handling, then demonstrate dashboard functionality for user acceptance
 
-- [ ] 5.0 Tool Access & Subscription Management System
-  - [ ] 5.1 Create subscription checking utility functions using Supabase MCP
-  - [ ] 5.2 Create subscription validation middleware for protected routes
-  - [ ] 5.3 Create API endpoint for checking user tool subscriptions
-  - [ ] 5.4 Implement subscription status validation in ToolCard component
-  - [ ] 5.5 Add subscription status indicators to dashboard UI
-  - [ ] 5.6 Create admin documentation file for managing subscriptions via Supabase Studio
-  - [ ] 5.7 Implement user feedback for subscription status (active/inactive/trial)
-  - [ ] 5.8 Create automated tests for subscription restrictions, then demonstrate access control for user acceptance
-  - [ ] 5.9 Create Playwright tests for subscription-based access control scenarios
-  - [ ] 5.10 Create Playwright tests for subscription status indicators and user feedback, then demonstrate access control system for user acceptance
+- [x] 5.0 Tool Access & Subscription Management System
+  - [x] 5.1 Create subscription checking utility functions using Supabase MCP
+  - [x] 5.2 Create subscription validation middleware for protected routes
+  - [x] 5.3 Create API endpoint for checking user tool subscriptions
+  - [x] 5.4 Implement subscription status validation in ToolCard component
+  - [x] 5.5 Add subscription status indicators to dashboard UI
+  - [x] 5.6 Create admin documentation file for managing subscriptions via Supabase Studio
+  - [x] 5.7 Implement user feedback for subscription status (active/inactive/trial)
+  - [x] 5.8 Create automated tests for subscription restrictions and access control
+  - [x] 5.9 Create Playwright tests for subscription-based access control scenarios
+  - [x] 5.10 Create Playwright tests for subscription status indicators and user feedback, then demonstrate access control system for user acceptance
 
 - [ ] 6.0 Invoice Reconciler - Core Interface & Airline Selection
   - [ ] 6.1 Create main invoice reconciler page component with basic layout
@@ -396,4 +399,9 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [ ] 9.19 Create automated tests for job management operations, then demonstrate complete workflow for user acceptance
   - [ ] 9.20 Create Playwright tests for job history interactions and status updates
   - [ ] 9.21 Create Playwright tests for file download workflows
-  - [ ] 9.22 Create Playwright end-to-end tests for complete reconciliation-to-download user journey, then demonstrate complete results system for user acceptance 
+  - [ ] 9.22 Create Playwright end-to-end tests for complete reconciliation-to-download user journey, then demonstrate complete results system for user acceptance
+
+### Subscription Restrictions Testing (Task 5.8)
+- `tests/integration/subscription-restrictions.test.js` - Comprehensive integration test suite for subscription restrictions and access control covering core access control logic (5 tests), security validation (3 tests), performance and edge cases (3 tests), with 11 total tests validating authentication requirements, subscription scenarios, tool access restrictions, error handling, user isolation, and performance optimization 
+- `tests/e2e/subscription-access-control.spec.ts` - Comprehensive Playwright tests for subscription-based access control covering authentication requirements, subscription status validation, tool-specific access restrictions, navigation behavior, UI feedback, error handling, network timeouts, retry functionality, and multi-tool access scenarios across multiple browsers and device sizes 
+- `tests/e2e/subscription-status-indicators.spec.ts` - Comprehensive Playwright tests for subscription status indicators and user feedback covering visual status badges, user feedback messages, hover tooltips, loading states, error handling, accessibility features, responsive design, and interactive elements validation 
