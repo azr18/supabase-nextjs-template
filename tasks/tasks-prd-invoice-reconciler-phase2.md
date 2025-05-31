@@ -80,7 +80,7 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
 - `nextjs/src/lib/supabase/queries/jobs.ts` - Database query utilities for reconciliation jobs
 
 **Invoice Reconciler Implementation Files:**
-- `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main invoice reconciler tool page
+- `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main invoice reconciler tool page with subscription validation, blue gradient theme, loading states, access control, and placeholder sections for airline selection and file management
 - `nextjs/src/components/InvoiceReconciler/AirlineSelector.tsx` - Airline dropdown selector component
 - `nextjs/src/components/InvoiceReconciler/InvoiceManager.tsx` - Saved invoices management component
 - `nextjs/src/components/InvoiceReconciler/FileUpload.tsx` - File upload interface component
@@ -163,95 +163,104 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 6.15 Create Playwright tests for dashboard visual consistency across device sizes
   - [x] 6.16 Test dashboard functionality preservation after styling updates, then demonstrate redesigned dashboard for user acceptance
 
-- [ ] 7.0 Invoice Reconciler - Core Interface & Airline Selection
-  - [ ] 7.1 Create main invoice reconciler page component with basic layout
-  - [ ] 7.2 Create AirlineSelector component with dropdown for 5 airlines
-  - [ ] 7.3 Add airline selection state management to main page
-  - [ ] 7.4 Implement dynamic interface updates based on airline selection
-  - [ ] 7.5 Add airline-specific instruction text component
-  - [ ] 7.6 Create validation logic requiring invoice selection before proceeding
-  - [ ] 7.7 Add loading states for airline selection operations
-  - [ ] 7.8 Add error handling for airline selection functionality
-  - [ ] 7.9 Implement subscription validation for invoice reconciler tool access
-  - [ ] 7.10 Create automated tests for airline selection functionality, then demonstrate interface for user acceptance
-  - [ ] 7.11 Create Playwright tests for airline selector dropdown interactions
-  - [ ] 7.12 Create Playwright tests for dynamic interface updates and validation flows, then demonstrate airline selection interface for user acceptance
+- [x] 7.0 Invoice Reconciler - Core Interface & Airline Selection
+  - [x] 7.1 Create main invoice reconciler page component with basic layout
+  - [x] 7.2 Create AirlineSelector component with dropdown for 5 airlines
+  - [x] 7.3 Add airline selection state management to main page
+  - [x] 7.4 Implement dynamic interface updates based on airline selection
+  - [x] 7.5 ~~Add airline-specific instruction text component~~ **REMOVED** - User requested removal of airline-specific instruction text component entirely
+  - [x] 7.6 Create validation logic requiring invoice selection before proceeding to next step
+  - [x] 7.8 Add error handling for airline selection functionality
+  - [x] 7.9 Implement subscription validation for invoice reconciler tool access
+  - [x] 7.10 Create automated tests for airline selection functionality, then demonstrate interface for user acceptance
+  - [x] 7.11 Create Playwright tests for airline selector dropdown interactions
+  - [x] 7.12 Create Playwright tests for dynamic interface updates and validation flows, then demonstrate airline selection interface for user acceptance
 
-- [ ] 8.0 Invoice Reconciler - File Management & Storage System
-  - [ ] 8.1 Create FileUpload component for PDF invoices with basic upload
-  - [ ] 8.2 Add drag-and-drop functionality to PDF upload component
-  - [ ] 8.3 Create FileUpload component for Excel reports (standardized format)
-  - [ ] 8.4 Implement client-side file validation (type, size up to 25MB)
-  - [ ] 8.5 Create file hash generation utility using SHA-256
-  - [ ] 8.6 Create duplicate detection utility comparing hash/filename/size
-  - [ ] 8.7 Create Supabase storage upload utility with proper file organization
-  - [ ] 8.8 Create InvoiceManager component for displaying saved invoices
-  - [ ] 8.9 Implement invoice filtering by selected airline in InvoiceManager
-  - [ ] 8.10 Add delete functionality for saved invoices
-  - [ ] 8.11 Implement upload progress indicators
-  - [ ] 8.12 Add success/error feedback for file operations
-  - [ ] 8.13 Create storage quota tracking utility
-  - [ ] 8.14 Implement storage quota enforcement (100MB per user)
-  - [ ] 8.15 Create automated tests for file upload functionality
-  - [ ] 8.16 Create automated tests for duplicate detection
-  - [ ] 8.17 Create automated tests for invoice management, then demonstrate upload/duplicate detection for user acceptance
-  - [ ] 8.18 Create Playwright tests for drag-and-drop file upload interactions
-  - [ ] 8.19 Create Playwright tests for file validation and error handling
-  - [ ] 8.20 Create Playwright tests for duplicate detection user flows
-  - [ ] 8.21 Create Playwright tests for invoice management interactions (view, delete, filter), then demonstrate complete file management system for user acceptance
+- [ ] 8.0 Invoice Reconciler - Invoice Selection & Management System (Step 2: Select or Upload Invoice)
+  - [ ] 8.1 Create saved invoices query utility for fetching user invoices by airline
+  - [ ] 8.2 Create InvoiceManager component to display saved invoices for selected airline
+  - [ ] 8.3 Implement saved invoice list with filename, upload date, file size display
+  - [ ] 8.4 Add invoice selection functionality (radio buttons or similar for choosing existing invoice)
+  - [ ] 8.5 Create FileUpload component for PDF invoices with basic upload functionality
+  - [ ] 8.6 Add drag-and-drop functionality to PDF upload component
+  - [ ] 8.7 Implement client-side file validation (PDF type, size up to 25MB)
+  - [ ] 8.8 Create file hash generation utility using SHA-256 for duplicate detection
+  - [ ] 8.9 Create duplicate detection utility comparing hash/filename/size
+  - [ ] 8.10 Create Supabase storage upload utility with proper file organization (user_id/airline_type/)
+  - [ ] 8.11 Integrate InvoiceManager and FileUpload into step 2 workflow (select existing OR upload new)
+  - [ ] 8.12 Add delete functionality for saved invoices in InvoiceManager
+  - [ ] 8.13 Implement upload progress indicators and success/error feedback
+  - [ ] 8.14 Create storage quota tracking and enforcement (100MB per user)
+  - [ ] 8.15 Add validation logic to ensure either existing invoice selected OR new invoice uploaded
+  - [ ] 8.16 Create automated tests for invoice selection functionality
+  - [ ] 8.17 Create automated tests for file upload and duplicate detection
+  - [ ] 8.18 Create automated tests for invoice management operations, then demonstrate invoice selection/upload for user acceptance
+  - [ ] 8.19 Create Playwright tests for invoice selection workflow (existing vs new upload)
+  - [ ] 8.20 Create Playwright tests for drag-and-drop file upload interactions
+  - [ ] 8.21 Create Playwright tests for duplicate detection and invoice management flows, then demonstrate complete invoice selection system for user acceptance
 
-- [ ] 9.0 Invoice Reconciler - Reconciliation Processing Engine
-  - [ ] 9.1 Create BaseProcessor abstract class with common interface
-  - [ ] 9.2 Create PDF data extraction utility using pdf-parse library
-  - [ ] 9.3 Create Excel data extraction utility using exceljs library
-  - [ ] 9.4 Create FlyDubaiProcessor class extending BaseProcessor
-  - [ ] 9.5 Implement PDF data extraction logic for Fly Dubai invoices
-  - [ ] 9.6 Implement reconciliation logic for Fly Dubai processor
-  - [ ] 9.7 Create TapProcessor class extending BaseProcessor
-  - [ ] 9.8 Implement PDF data extraction logic for TAP invoices
-  - [ ] 9.9 Implement reconciliation logic for TAP processor
-  - [ ] 9.10 Create PhilippinesProcessor class extending BaseProcessor
-  - [ ] 9.11 Implement PDF data extraction logic for Philippines Airlines invoices
-  - [ ] 9.12 Implement reconciliation logic for Philippines Airlines processor
-  - [ ] 9.13 Create AirIndiaProcessor class extending BaseProcessor
-  - [ ] 9.14 Implement PDF data extraction logic for Air India invoices
-  - [ ] 9.15 Implement reconciliation logic for Air India processor
-  - [ ] 9.16 Create ElAlProcessor class extending BaseProcessor
-  - [ ] 9.17 Implement PDF data extraction logic for El Al invoices
-  - [ ] 9.18 Implement reconciliation logic for El Al processor
-  - [ ] 9.19 Create main reconciliation API endpoint structure
-  - [ ] 9.20 Implement job queuing logic in reconciliation API
-  - [ ] 9.21 Add status tracking to reconciliation jobs
-  - [ ] 9.22 Implement error handling and logging for reconciliation processes
-  - [ ] 9.23 Create automated tests for Fly Dubai processor with sample data
-  - [ ] 9.24 Create automated tests for TAP processor with sample data
-  - [ ] 9.25 Create automated tests for Philippines Airlines processor with sample data
-  - [ ] 9.26 Create automated tests for Air India processor with sample data
-  - [ ] 9.27 Create automated tests for El Al processor with sample data
-  - [ ] 9.28 Run end-to-end automated tests for all airlines, then demonstrate reconciliation workflow for user acceptance
-  - [ ] 9.29 Create Playwright end-to-end tests for complete reconciliation workflows
-  - [ ] 9.30 Create Playwright tests for job status tracking and error handling scenarios, then demonstrate processing engine for user acceptance
+- [ ] 9.0 Invoice Reconciler - Excel Report Upload System (Step 3: Upload Excel Report)
+  - [ ] 9.1 Create FileUpload component for Excel reports (standardized format)
+  - [ ] 9.2 Add drag-and-drop functionality to Excel report upload component
+  - [ ] 9.3 Implement client-side file validation for Excel files (type, size up to 25MB)
+  - [ ] 9.4 Create Supabase storage upload utility for Excel reports (user_id/jobs/job_id/)
+  - [ ] 9.5 Implement upload progress indicators and success/error feedback for Excel uploads
+  - [ ] 9.6 Add validation logic requiring Excel report upload before proceeding to processing
+  - [ ] 9.7 Create automated tests for Excel report upload functionality
+  - [ ] 9.8 Create Playwright tests for Excel report upload workflow, then demonstrate Excel upload system for user acceptance
 
-- [ ] 10.0 Invoice Reconciler - Results & Reporting System
-  - [ ] 10.1 Create Excel report generation utility with basic structure
-  - [ ] 10.2 Implement multi-sheet Excel report creation
-  - [ ] 10.3 Add conditional formatting utility for highlighting discrepancies
-  - [ ] 10.4 Create summary sheet generation for Excel reports
-  - [ ] 10.5 Create reconciliation sheet generation with side-by-side comparisons
-  - [ ] 10.6 Implement airline-specific report formatting
-  - [ ] 10.7 Create secure file download system using Supabase signed URLs
-  - [ ] 10.8 Create JobHistory component for displaying past reconciliations
-  - [ ] 10.9 Implement job status tracking in JobHistory component
-  - [ ] 10.10 Add download links to completed jobs in JobHistory
-  - [ ] 10.11 Create job management API endpoint for status updates
-  - [ ] 10.12 Create job management API endpoint for file retrieval
-  - [ ] 10.13 Implement real-time job status updates in UI
-  - [ ] 10.14 Add report metadata display to job history
-  - [ ] 10.15 Create cleanup procedures for temporary files
-  - [ ] 10.16 Create cleanup procedures for completed jobs
-  - [ ] 10.17 Create automated tests for Excel report generation
-  - [ ] 10.18 Create automated tests for file download functionality
-  - [ ] 10.19 Create automated tests for job management operations, then demonstrate complete workflow for user acceptance
-  - [ ] 10.20 Create Playwright tests for job history interactions and status updates
-  - [ ] 10.21 Create Playwright tests for file download workflows
-  - [ ] 10.22 Create Playwright end-to-end tests for complete reconciliation-to-download user journey, then demonstrate complete results system for user acceptance 
+- [ ] 10.0 Invoice Reconciler - Reconciliation Processing Engine (Step 4: Processing)
+  - [ ] 10.1 Create BaseProcessor abstract class with common interface
+  - [ ] 10.2 Create PDF data extraction utility using pdf-parse library
+  - [ ] 10.3 Create Excel data extraction utility using exceljs library
+  - [ ] 10.4 Create FlyDubaiProcessor class extending BaseProcessor
+  - [ ] 10.5 Implement PDF data extraction logic for Fly Dubai invoices
+  - [ ] 10.6 Implement reconciliation logic for Fly Dubai processor
+  - [ ] 10.7 Create TapProcessor class extending BaseProcessor
+  - [ ] 10.8 Implement PDF data extraction logic for TAP invoices
+  - [ ] 10.9 Implement reconciliation logic for TAP processor
+  - [ ] 10.10 Create PhilippinesProcessor class extending BaseProcessor
+  - [ ] 10.11 Implement PDF data extraction logic for Philippines Airlines invoices
+  - [ ] 10.12 Implement reconciliation logic for Philippines Airlines processor
+  - [ ] 10.13 Create AirIndiaProcessor class extending BaseProcessor
+  - [ ] 10.14 Implement PDF data extraction logic for Air India invoices
+  - [ ] 10.15 Implement reconciliation logic for Air India processor
+  - [ ] 10.16 Create ElAlProcessor class extending BaseProcessor
+  - [ ] 10.17 Implement PDF data extraction logic for El Al invoices
+  - [ ] 10.18 Implement reconciliation logic for El Al processor
+  - [ ] 10.19 Create main reconciliation API endpoint structure
+  - [ ] 10.20 Implement job queuing logic in reconciliation API
+  - [ ] 10.21 Add status tracking to reconciliation jobs
+  - [ ] 10.22 Implement error handling and logging for reconciliation processes
+  - [ ] 10.23 Create automated tests for Fly Dubai processor with sample data
+  - [ ] 10.24 Create automated tests for TAP processor with sample data
+  - [ ] 10.25 Create automated tests for Philippines Airlines processor with sample data
+  - [ ] 10.26 Create automated tests for Air India processor with sample data
+  - [ ] 10.27 Create automated tests for El Al processor with sample data
+  - [ ] 10.28 Run end-to-end automated tests for all airlines, then demonstrate reconciliation workflow for user acceptance
+  - [ ] 10.29 Create Playwright end-to-end tests for complete reconciliation workflows
+  - [ ] 10.30 Create Playwright tests for job status tracking and error handling scenarios, then demonstrate processing engine for user acceptance
+
+- [ ] 11.0 Invoice Reconciler - Results & Reporting System (Step 5: Download Results)
+  - [ ] 11.1 Create Excel report generation utility with basic structure
+  - [ ] 11.2 Implement multi-sheet Excel report creation
+  - [ ] 11.3 Add conditional formatting utility for highlighting discrepancies
+  - [ ] 11.4 Create summary sheet generation for Excel reports
+  - [ ] 11.5 Create reconciliation sheet generation with side-by-side comparisons
+  - [ ] 11.6 Implement airline-specific report formatting
+  - [ ] 11.7 Create secure file download system using Supabase signed URLs
+  - [ ] 11.8 Create JobHistory component for displaying past reconciliations
+  - [ ] 11.9 Implement job status tracking in JobHistory component
+  - [ ] 11.10 Add download links to completed jobs in JobHistory
+  - [ ] 11.11 Create job management API endpoint for status updates
+  - [ ] 11.12 Create job management API endpoint for file retrieval
+  - [ ] 11.13 Implement real-time job status updates in UI
+  - [ ] 11.14 Add report metadata display to job history
+  - [ ] 11.15 Create cleanup procedures for temporary files
+  - [ ] 11.16 Create cleanup procedures for completed jobs
+  - [ ] 11.17 Create automated tests for Excel report generation
+  - [ ] 11.18 Create automated tests for file download functionality
+  - [ ] 11.19 Create automated tests for job management operations, then demonstrate complete workflow for user acceptance
+  - [ ] 11.20 Create Playwright tests for job history interactions and status updates
+  - [ ] 11.21 Create Playwright tests for file download workflows
+  - [ ] 11.22 Create Playwright end-to-end tests for complete reconciliation-to-download user journey, then demonstrate complete results system for user acceptance 

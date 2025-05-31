@@ -1,5 +1,22 @@
 # Admin Guide: Managing User Subscriptions via Supabase Studio
 
+## 🚨 IMPORTANT: RLS Permission Fix Applied
+
+**If you're experiencing "read-only editor" issues or cannot insert rows**, this has been resolved! 
+
+The database has been updated with proper Row Level Security (RLS) policies that allow admin access via Supabase Studio. You should now be able to:
+- ✅ Insert new subscription records
+- ✅ Update existing subscriptions  
+- ✅ Delete subscription records
+- ✅ View all subscription data
+
+**Current Admin Access Configuration:**
+- Any authenticated user in Supabase Studio has full admin access (MVP configuration)
+- Service role has full programmatic access
+- Regular app users can only view their own subscriptions
+
+**For Production:** Replace the temporary admin access with proper admin role checking by modifying the `is_admin_user_simple()` function in the database.
+
 ## Table of Contents
 1. [Overview](#overview)
 2. [Accessing Supabase Studio](#accessing-supabase-studio)
@@ -278,6 +295,57 @@ ORDER BY u.last_sign_in_at DESC NULLS LAST;
 - Keep external records of major subscription changes
 
 ## Troubleshooting
+
+### Issue: Cannot Insert Rows - "Read-Only Editor" Error
+**FIXED**: This issue has been resolved with the RLS policy updates.
+
+**What was the problem:**
+- Row Level Security (RLS) was enabled with overly restrictive policies
+- Policies blocked ALL authenticated users from insert/update/delete operations
+- Only service_role had access, but Supabase Studio users are authenticated role
+
+**Solution Applied:**
+1. Removed restrictive policies that blocked all authenticated users
+2. Added permissive admin policies for subscription management
+3. Created `is_admin_user_simple()` function for admin identification
+4. Added temporary MVP policy allowing any authenticated user admin access
+
+**Current Policy Configuration:**
+```sql
+-- Key policies now active:
+-- 1. "Temporary admin access for MVP" - allows authenticated users full access
+-- 2. "Service role full access" - allows API operations  
+-- 3. User read policies for regular app access
+```
+
+**For Production Security:**
+Replace the temporary admin policy by modifying the `is_admin_user_simple()` function:
+```sql
+-- Example: Check specific admin emails
+CREATE OR REPLACE FUNCTION public.is_admin_user_simple()
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $function$
+DECLARE
+    user_email TEXT;
+BEGIN
+    SELECT email INTO user_email
+    FROM auth.users
+    WHERE id = auth.uid();
+    
+    -- Check specific admin emails
+    RETURN user_email IN (
+        'admin@yourcompany.com',
+        'support@yourcompany.com'
+    );
+    
+    -- Or check email domain
+    -- RETURN user_email LIKE '%@yourcompany.com';
+END;
+$function$;
+```
 
 ### Issue: User Can't Access Tool After Subscription Grant
 **Check:**

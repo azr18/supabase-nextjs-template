@@ -12,7 +12,7 @@ export interface UserSubscription {
     id: string
     name: string
     slug: string
-    is_active: boolean
+    status: string
   }
 }
 
@@ -51,43 +51,36 @@ export async function checkUserToolAccess(
   toolSlug: string
 ): Promise<SubscriptionCheckResult> {
   try {
-    const { data: subscription, error } = await supabase
-      .from('user_tool_subscriptions')
-      .select(`
-        id,
-        user_id,
-        tool_id,
-        status,
-        started_at,
-        expires_at,
-        tools(
-          id,
-          name,
-          slug,
-          is_active
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('tools.slug', toolSlug)
+    // First, get the tool by slug
+    const { data: tool, error: toolError } = await supabase
+      .from('tools')
+      .select('id, name, slug, status')
+      .eq('slug', toolSlug)
       .eq('status', 'active')
       .single()
 
-    if (error || !subscription) {
+    if (toolError || !tool) {
+      return {
+        hasAccess: false,
+        subscription: null,
+        reason: 'Tool not found or inactive'
+      }
+    }
+
+    // Then, check for user subscription to this tool
+    const { data: subscription, error: subscriptionError } = await supabase
+      .from('user_tool_subscriptions')
+      .select('id, user_id, tool_id, status, started_at, expires_at')
+      .eq('user_id', userId)
+      .eq('tool_id', tool.id)
+      .eq('status', 'active')
+      .single()
+
+    if (subscriptionError || !subscription) {
       return {
         hasAccess: false,
         subscription: null,
         reason: 'No active subscription found'
-      }
-    }
-
-    // Type assertion with proper checking
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subscriptionData = subscription as any
-    if (!subscriptionData.tools || !subscriptionData.tools.is_active) {
-      return {
-        hasAccess: false,
-        subscription: null,
-        reason: 'Tool is currently inactive'
       }
     }
 
@@ -101,7 +94,7 @@ export async function checkUserToolAccess(
           hasAccess: false,
           subscription: {
             ...subscription,
-            tool: subscriptionData.tools
+            tool: tool
           } as UserSubscription,
           reason: 'Subscription has expired'
         }
@@ -112,7 +105,7 @@ export async function checkUserToolAccess(
       hasAccess: true,
       subscription: {
         ...subscription,
-        tool: subscriptionData.tools
+        tool: tool
       } as UserSubscription
     }
   } catch (error) {
@@ -146,7 +139,7 @@ export async function getUserActiveSubscriptions(
           id,
           name,
           slug,
-          is_active
+          status
         )
       `)
       .eq('user_id', userId)
@@ -167,7 +160,7 @@ export async function getUserActiveSubscriptions(
       }))
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((sub: any) => {
-        if (!sub.tool || !sub.tool.is_active) return false
+        if (!sub.tool || sub.tool.status !== 'active') return false
         
         if (sub.expires_at) {
           const expiryDate = new Date(sub.expires_at)
@@ -198,32 +191,26 @@ export function isProtectedRoute(pathname: string): boolean {
   if (PROTECTED_ROUTES[pathname]) {
     return true
   }
-  
-  // Check if it's a nested route under a protected path
-  for (const protectedPath of Object.keys(PROTECTED_ROUTES)) {
-    if (pathname.startsWith(protectedPath + '/')) {
-      return true
-    }
-  }
-  
-  return false
+
+  // Check if it's a dynamic tool route pattern
+  const toolRoutePattern = /^\/app\/[^\/]+$/
+  return toolRoutePattern.test(pathname)
 }
 
 /**
  * Gets the required tool slug for a protected route
  */
 export function getRequiredToolSlug(pathname: string): string | null {
-  // Direct match
+  // Check specific routes first
   if (PROTECTED_ROUTES[pathname]) {
     return PROTECTED_ROUTES[pathname]
   }
-  
-  // Find parent route for nested paths
-  for (const [protectedPath, toolSlug] of Object.entries(PROTECTED_ROUTES)) {
-    if (pathname.startsWith(protectedPath + '/')) {
-      return toolSlug
-    }
+
+  // For dynamic routes like /app/tool-name, extract the tool slug
+  const match = pathname.match(/^\/app\/([^\/]+)$/)
+  if (match) {
+    return match[1]
   }
-  
+
   return null
 } 

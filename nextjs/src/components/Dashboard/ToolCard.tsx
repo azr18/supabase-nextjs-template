@@ -152,18 +152,38 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
     // If validation is in progress or failed, use original data
     if (validationState.error || !validationState.result) {
       const subscription = tool.subscription;
-      const isActive = subscription?.status === 'active';
-      const isTrial = subscription?.status === 'trial';
+      
+      // Check if subscription exists and is active/trial
+      if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trial')) {
+        return {
+          hasAccess: false,
+          isActive: subscription?.status === 'active',
+          isTrial: subscription?.status === 'trial',
+          subscription,
+          source: 'fallback' as const
+        };
+      }
+
+      // Check expiration dates even for fallback
+      const now = new Date();
+      let isExpiredByDate = false;
+      
+      if (subscription.status === 'active' && subscription.expires_at) {
+        isExpiredByDate = new Date(subscription.expires_at) <= now;
+      } else if (subscription.status === 'trial' && subscription.trial_ends_at) {
+        isExpiredByDate = new Date(subscription.trial_ends_at) <= now;
+      }
+
       return {
-        hasAccess: isActive || isTrial,
-        isActive,
-        isTrial,
+        hasAccess: !isExpiredByDate, // Access denied if expired by date
+        isActive: subscription?.status === 'active' && !isExpiredByDate,
+        isTrial: subscription?.status === 'trial' && !isExpiredByDate,
         subscription,
         source: 'fallback' as const
       };
     }
 
-    // Use validated data
+    // Use validated data (this already has proper hasAccess from API)
     const subscription = validationState.result.subscription;
     const isActive = subscription?.status === 'active';
     const isTrial = subscription?.status === 'trial';
@@ -198,8 +218,21 @@ export function ToolCard({ tool, className, onSubscriptionUpdate }: ToolCardProp
       );
     }
 
+    // Check if subscription has expired based on dates, regardless of status field
+    const now = new Date();
+    let isExpiredByDate = false;
+    
+    if (subscription.status === 'active' && subscription.expires_at) {
+      isExpiredByDate = new Date(subscription.expires_at) <= now;
+    } else if (subscription.status === 'trial' && subscription.trial_ends_at) {
+      isExpiredByDate = new Date(subscription.trial_ends_at) <= now;
+    }
+
     let badge;
-    switch (subscription.status) {
+    // Override status if expired by date
+    const effectiveStatus = isExpiredByDate ? 'expired' : subscription.status;
+    
+    switch (effectiveStatus) {
       case 'active':
         badge = <Badge variant="default" className="bg-gradient-to-r from-gray-800 via-blue-500 to-blue-600 hover:from-gray-700 hover:via-blue-600 hover:to-blue-700 text-white border-0 shadow-md transition-all duration-300 hover:scale-105">Active</Badge>;
         break;

@@ -121,7 +121,7 @@ The goal is to create a platform that simplifies complex business processes, sta
 2.  FR5.2: The backend function **must** retrieve the selected saved invoice and uploaded report file from the Supabase storage bucket based on the user's job and airline type.
 3.  FR5.3: For Fly Dubai and TAP, the system **must** support conversion and integration of existing Python reconciliation scripts into the Next.js/TypeScript environment.
 4.  FR5.4: For Philippines Airlines, Air India, and El Al, the system **must** support development of new reconciliation logic based on their specific invoice formats and the standardized report format.
-5.  FR5.5: Each airline processor **must** extract data from airline-specific PDF invoices using appropriate libraries (e.g., `pdf-parse`, `pdfreader`).
+5.  FR5.5: Each airline processor **must** extract data from airline-specific PDF invoices using appropriate libraries (e.g., `pdf-parse`, `pdfplumber`).
 6.  FR5.6: Each airline processor **must** extract data from standardized Excel reports using appropriate libraries (e.g., `exceljs`, `xlsx`).
 7.  FR5.7: Each airline processor **must** perform reconciliation logic specific to that airline's invoice format, comparing invoice data against report data and identifying matches and discrepancies.
 8.  FR5.8: The system **must** handle common data variations and potential errors during extraction and processing gracefully for each airline type, implementing airline-specific configuration parameters as needed during development.

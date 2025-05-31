@@ -17,7 +17,7 @@ Guidelines for managing task lists in markdown files to track progress on comple
 ## Task Implementation Protocol
 
 - **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say "yes" or "y"
-- **Prepare for new chat:** Mention relevant files needed for next task to be referenced in new chat
+- **Prepare for new chat:** Provide prompt for agent coder to begin next task effectively
 - **Agentic Development:** AI agent implements the technical solution completely before user validation
 - **Business Validation:** After technical completion, demonstrate functionality to user for business acceptance
 - **Completion Protocol:**  
@@ -108,4 +108,5 @@ A sub-task is complete when:
 - ✅ User provides business acceptance validation
 - ✅ Task list is updated with completion status
 - ✅ Relevant files section reflects all changes
+
 

@@ -73,35 +73,45 @@ export function SubscriptionStatusSummary({
         return;
       }
 
-      switch (subscription.status) {
-        case 'active':
-          newSummary.active++;
-          // Check if expires soon
-          if (subscription.expires_at) {
-            const expirationDate = new Date(subscription.expires_at);
-            if (expirationDate <= sevenDaysFromNow) {
-              newSummary.expiringSoon++;
-            }
-          }
-          break;
-        case 'trial':
-          newSummary.trial++;
-          // Check if trial expires soon
-          if (subscription.trial_ends_at) {
-            const trialEnd = new Date(subscription.trial_ends_at);
-            if (trialEnd <= sevenDaysFromNow) {
-              newSummary.expiringSoon++;
-            }
-          }
-          break;
-        case 'expired':
-          newSummary.expired++;
-          break;
-        case 'inactive':
-          newSummary.inactive++;
-          break;
-        default:
-          newSummary.noAccess++;
+      // Check if subscription has expired based on dates, regardless of status field
+      let isExpiredByDate = false;
+      let isExpiringSoon = false;
+      
+      if (subscription.status === 'active' && subscription.expires_at) {
+        const expirationDate = new Date(subscription.expires_at);
+        isExpiredByDate = expirationDate <= now;
+        isExpiringSoon = !isExpiredByDate && expirationDate <= sevenDaysFromNow;
+      } else if (subscription.status === 'trial' && subscription.trial_ends_at) {
+        const trialEnd = new Date(subscription.trial_ends_at);
+        isExpiredByDate = trialEnd <= now;
+        isExpiringSoon = !isExpiredByDate && trialEnd <= sevenDaysFromNow;
+      }
+
+      // Override status classification if expired by date
+      if (isExpiredByDate) {
+        newSummary.expired++;
+      } else {
+        switch (subscription.status) {
+          case 'active':
+            newSummary.active++;
+            break;
+          case 'trial':
+            newSummary.trial++;
+            break;
+          case 'expired':
+            newSummary.expired++;
+            break;
+          case 'inactive':
+            newSummary.inactive++;
+            break;
+          default:
+            newSummary.noAccess++;
+        }
+      }
+
+      // Count expiring soon (only for non-expired subscriptions)
+      if (isExpiringSoon) {
+        newSummary.expiringSoon++;
       }
     });
 
