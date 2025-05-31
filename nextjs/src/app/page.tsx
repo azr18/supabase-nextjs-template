@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import AuthAwareButtons from '@/components/AuthAwareButtons';
 import Hero from '@/components/LandingPage/Hero';
 import Features from '@/components/LandingPage/Features';

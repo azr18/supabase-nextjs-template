@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGlobal } from '@/lib/context/GlobalContext';
@@ -15,12 +15,22 @@ export default function UserSettingsPage() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-
+    // Handle scroll to anchor on page load
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.hash) {
+            const element = document.querySelector(window.location.hash);
+            if (element) {
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, []);
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            setError("New passwords don't match");
+            setError("New passwords don&apos;t match");
             return;
         }
 
@@ -53,8 +63,6 @@ export default function UserSettingsPage() {
             setLoading(false);
         }
     };
-
-
 
     return (
         <div className="space-y-6 p-6">
@@ -100,13 +108,13 @@ export default function UserSettingsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card id="password">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Key className="h-5 w-5" />
                                 Change Password
                             </CardTitle>
-                            <CardDescription>Update your account password</CardDescription>
+                            <CardDescription>Update your account password for enhanced security</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -121,6 +129,8 @@ export default function UserSettingsPage() {
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm"
                                         required
+                                        minLength={6}
+                                        placeholder="Enter your new password"
                                     />
                                 </div>
                                 <div>
@@ -134,12 +144,14 @@ export default function UserSettingsPage() {
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500 text-sm"
                                         required
+                                        minLength={6}
+                                        placeholder="Confirm your new password"
                                     />
                                 </div>
                                 <button
                                     type="submit"
-                                    disabled={loading}
-                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                                    disabled={loading || !newPassword || !confirmPassword}
+                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? 'Updating...' : 'Update Password'}
                                 </button>
@@ -147,11 +159,13 @@ export default function UserSettingsPage() {
                         </CardContent>
                     </Card>
 
-                    <MFASetup
-                        onStatusChange={() => {
-                            setSuccess('Two-factor authentication settings updated successfully');
-                        }}
-                    />
+                    <div id="mfa">
+                        <MFASetup
+                            onStatusChange={() => {
+                                setSuccess('Two-factor authentication settings updated successfully');
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

@@ -13,7 +13,7 @@ interface TranslationContextType {
   locale: Locale;
   changeLocale: (newLocale: Locale) => Promise<void>;
   isLoading: boolean;
-  messages: Messages;
+  messages: Record<string, string | Record<string, string>>;
 }
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);

@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, Mail, Headphones, CheckCircle, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslations } from '@/i18n';
 
 interface FormData {

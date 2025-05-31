@@ -1,7 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Brain, TrendingUp, Users, MessageSquare, FileText, DollarSign, UserCheck, Zap, CheckCircle, Shield, RefreshCw, Briefcase, PenTool } from 'lucide-react';
+import { 
+  Brain, 
+  TrendingUp, 
+  Users, 
+  MessageSquare, 
+  FileText, 
+  DollarSign, 
+  UserCheck, 
+  Zap 
+} from 'lucide-react';
 import { useTranslations } from '@/i18n';
 
 const Features = () => {

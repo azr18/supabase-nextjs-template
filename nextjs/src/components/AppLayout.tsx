@@ -9,10 +9,11 @@ import {
     X,
     ChevronDown,
     LogOut,
-    Key, Files, LucideListTodo,
+    Key,
 } from 'lucide-react';
 import { useGlobal } from "@/lib/context/GlobalContext";
 import { createSPASassClient } from "@/lib/supabase/client";
+import { ErrorBoundary } from './ErrorBoundary';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -31,9 +32,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             console.error('Error logging out:', error);
         }
     };
-    const handleChangePassword = async () => {
-        router.push('/app/user-settings')
-    };
 
     const getInitials = (email: string) => {
         const parts = email.split('@')[0].split(/[._-]/);
@@ -45,9 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     const productName = process.env.NEXT_PUBLIC_PRODUCTNAME;
 
     const navigation = [
-        { name: 'Homepage', href: '/app', icon: Home },
-        { name: 'Example Storage', href: '/app/storage', icon: Files },
-        { name: 'Example Table', href: '/app/table', icon: LucideListTodo },
+        { name: 'Dashboard', href: '/app', icon: Home },
         { name: 'User Settings', href: '/app/user-settings', icon: User },
     ];
 
@@ -79,19 +75,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {/* Navigation */}
                 <nav className="mt-4 px-2 space-y-1">
                     {navigation.map((item) => {
-                        const isActive = pathname === item.href;
+                        const isActive = pathname === item.href || 
+                                       (item.href === '/app/user-settings' && pathname.startsWith('/app/user-settings'));
                         return (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                                className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                                     isActive
-                                        ? 'bg-primary-50 text-primary-600'
+                                        ? 'bg-primary-50 text-primary-600 border-r-2 border-primary-600'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
                                 <item.icon
-                                    className={`mr-3 h-5 w-5 ${
+                                    className={`mr-3 h-5 w-5 transition-colors duration-200 ${
                                         isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
                                     }`}
                                 />
@@ -138,13 +135,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                     <button
                                         onClick={() => {
                                             setUserDropdownOpen(false);
-                                            handleChangePassword()
+                                            router.push('/app/user-settings');
+                                        }}
+                                        className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <User className="mr-3 h-4 w-4 text-gray-400"/>
+                                        Account Settings
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setUserDropdownOpen(false);
+                                            router.push('/app/user-settings#password');
                                         }}
                                         className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                     >
                                         <Key className="mr-3 h-4 w-4 text-gray-400"/>
                                         Change Password
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            setUserDropdownOpen(false);
+                                            router.push('/app/user-settings#mfa');
+                                        }}
+                                        className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <Key className="mr-3 h-4 w-4 text-gray-400"/>
+                                        Security (MFA)
+                                    </button>
+                                    <div className="border-t border-gray-100 my-1"></div>
                                     <button
                                         onClick={() => {
                                             handleLogout();
@@ -162,7 +180,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <main className="p-4">
-                    {children}
+                    <ErrorBoundary>
+                        {children}
+                    </ErrorBoundary>
                 </main>
             </div>
         </div>
