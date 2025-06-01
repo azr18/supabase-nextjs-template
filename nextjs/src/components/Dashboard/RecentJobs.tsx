@@ -14,7 +14,7 @@ import {
   formatDuration, 
   getRelativeTime 
 } from '@/lib/supabase/queries/jobs';
-import { createSPAClient } from '@/lib/supabase/client';
+import { createSPASassClient } from '@/lib/supabase/client';
 
 // Error types for better error handling
 enum JobsErrorType {
@@ -226,8 +226,8 @@ export function RecentJobs({ userId, limit = 5, className }: RecentJobsProps) {
         throw new Error('You are currently offline. Please check your internet connection and try again.');
       }
 
-      const supabase = createSPAClient();
-      const { data, error } = await supabase.storage
+      const supabase = await createSPASassClient();
+      const { data, error } = await supabase.getSupabaseClient().storage
         .from('invoice-reconciler')
         .createSignedUrl(job.result_file_path, 60); // 1 minute expiry
 

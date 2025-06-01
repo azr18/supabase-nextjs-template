@@ -1,17 +1,20 @@
 // src/app/api/auth/callback/route.ts
 import { NextResponse } from 'next/server'
-import { createSSRSassClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const code = requestUrl.searchParams.get('code')
 
     if (code) {
-        const supabase = await createSSRSassClient()
-        const client = supabase.getSupabaseClient()
+        const client = await createClient()
 
         // Exchange the code for a session
-        await supabase.exchangeCodeForSession(code)
+        const { error: exchangeError } = await client.auth.exchangeCodeForSession(code)
+        if (exchangeError) {
+            console.error('Error exchanging code for session:', exchangeError)
+            return NextResponse.redirect(new URL('/auth/login?error=auth_exchange_failed', request.url))
+        }
 
         // Check MFA status
         const { data: aal, error: aalError } = await client.auth.mfa.getAuthenticatorAssuranceLevel()
@@ -22,7 +25,7 @@ export async function GET(request: Request) {
         }
 
         // If user needs to complete MFA verification
-        if (aal.nextLevel === 'aal2' && aal.nextLevel !== aal.currentLevel) {
+        if (aal && aal.nextLevel === 'aal2' && aal.nextLevel !== aal.currentLevel) {
             return NextResponse.redirect(new URL('/auth/2fa', request.url))
         }
 

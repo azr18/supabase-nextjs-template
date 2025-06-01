@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGlobal } from '@/lib/context/GlobalContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,10 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/useToast';
 import { hasToolAccess, getToolSubscriptionStatus } from '@/lib/supabase/queries/tools';
 import AirlineSelector, { AIRLINES } from '@/components/InvoiceReconciler/AirlineSelector';
+import InvoiceManager from '@/components/InvoiceReconciler/InvoiceManager';
+import FileUpload from '@/components/InvoiceReconciler/FileUpload';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import type { SavedInvoice } from '@/lib/supabase/types';
 
 // Tool slug for subscription validation
 const TOOL_SLUG = 'invoice-reconciler';
@@ -40,6 +44,10 @@ interface WorkflowState {
     description: string;
     status: 'active' | 'coming-soon';
   } | null;
+  // Invoice selection state
+  selectedInvoiceId: string | null;
+  // New file upload state
+  selectedFile: File | null;
   isValidSelection: boolean;
   canProceed: boolean;
   validationError: string | null;
@@ -49,9 +57,23 @@ interface WorkflowState {
 }
 
 export default function InvoiceReconcilerPage() {
-  const { user, loading } = useGlobal();
+  const { user, loading: userLoading } = useGlobal();
   const router = useRouter();
   const { toast } = useToast();
+  
+  const supabaseClient = useMemo(() => {
+    if (typeof window !== 'undefined') {
+        try {
+            return createSupabaseBrowserClient();
+        } catch (e) {
+            console.error("Failed to create Supabase browser client:", e);
+            toast({ title: "Initialization Error", description: "Could not initialize critical services. Please refresh.", variant: "destructive" });
+            return null; 
+        }
+    }
+    return null;
+  }, [toast]);
+
   const [accessStatus, setAccessStatus] = useState<AccessStatus>({
     hasAccess: false,
     isLoading: true,
@@ -67,13 +89,17 @@ export default function InvoiceReconcilerPage() {
     currentStep: 'airline-selection',
     selectedAirline: null,
     selectedAirlineData: null,
+    selectedInvoiceId: null,
+    selectedFile: null,
     isValidSelection: false,
     canProceed: false,
     validationError: null,
-    // Loading states for airline selection operations
-    isLoadingAirlines: true, // Start with loading state
+    isLoadingAirlines: true,
     isProcessingSelection: false
   });
+  
+  // Refetch key for InvoiceManager to force re-render/refetch
+  const [invoiceManagerKey, setInvoiceManagerKey] = useState(Date.now());
 
   // Simulate initial airline data loading
   useEffect(() => {
@@ -86,14 +112,16 @@ export default function InvoiceReconcilerPage() {
       }));
     };
 
-    if (!loading && accessStatus.hasAccess) {
+    if (!userLoading && accessStatus.hasAccess && workflow.isLoadingAirlines && supabaseClient) {
       loadAirlineData();
     }
-  }, [loading, accessStatus.hasAccess]);
+  }, [userLoading, accessStatus.hasAccess, workflow.isLoadingAirlines, supabaseClient]);
 
   // Check tool access on component mount
   useEffect(() => {
     async function checkAccess() {
+      if (userLoading || !supabaseClient) return;
+
       if (!user?.id) {
         setAccessStatus({
           hasAccess: false,
@@ -103,16 +131,18 @@ export default function InvoiceReconcilerPage() {
           lastChecked: null,
           subscriptionStatus: null,
           errorCode: 'AUTH_ERROR',
-          canRetry: true
+          canRetry: false, 
         });
+        // Optionally redirect or show login prompt
+        // router.push('/auth/login'); 
         return;
       }
 
+      setAccessStatus(prev => ({ ...prev, isLoading: true }));
       try {
-        // Enhanced subscription validation with detailed status
         const statusResult = await getToolSubscriptionStatus(TOOL_SLUG, user.id);
-        const hasAccess = await hasToolAccess(TOOL_SLUG, user.id);
-        
+        const hasAccess = statusResult.status === 'active' || statusResult.status === 'trialing'; // Example active statuses
+
         if (hasAccess) {
           setAccessStatus({
             hasAccess: true,
@@ -121,24 +151,21 @@ export default function InvoiceReconcilerPage() {
             retryCount: 0,
             lastChecked: new Date(),
             subscriptionStatus: statusResult.status,
-            canRetry: true
+            canRetry: true,
           });
         } else {
-          // Classify the error type for better user experience
           let errorCode: AccessStatus['errorCode'] = 'UNKNOWN';
           let errorMessage = 'You do not have access to this tool';
-          
           if (!statusResult.subscription) {
             errorCode = 'NO_SUBSCRIPTION';
             errorMessage = 'No active subscription found for this tool';
           } else if (statusResult.status === 'expired') {
             errorCode = 'EXPIRED';
             errorMessage = 'Your subscription has expired';
-          } else if (statusResult.status === 'inactive') {
+          } else if (statusResult.status && ['inactive', 'paused', 'cancelled'].includes(statusResult.status)) {
             errorCode = 'INACTIVE';
-            errorMessage = 'Your subscription is currently inactive';
+            errorMessage = `Your subscription is ${statusResult.status}. Please contact support.`;
           }
-
           setAccessStatus({
             hasAccess: false,
             isLoading: false,
@@ -147,56 +174,28 @@ export default function InvoiceReconcilerPage() {
             lastChecked: new Date(),
             subscriptionStatus: statusResult.status,
             errorCode,
-            canRetry: true
+            canRetry: errorCode === 'NO_SUBSCRIPTION', // Allow retry (e.g. go to subscribe page) only if no sub
           });
-
-          // Enhanced user feedback based on error type
-          if (errorCode === 'NO_SUBSCRIPTION') {
-            toast({
-              title: "Subscription Required",
-              description: "You need an active subscription to use the Invoice Reconciler tool.",
-              variant: "destructive",
-            });
-          } else if (errorCode === 'EXPIRED') {
-            toast({
-              title: "Subscription Expired",
-              description: "Your subscription has expired. Please contact support to renew.",
-              variant: "destructive",
-            });
-          } else if (errorCode === 'INACTIVE') {
-            toast({
-              title: "Subscription Inactive",
-              description: "Your subscription is inactive. Please contact support.",
-              variant: "destructive",
-            });
-          }
+          toast({ title: "Access Denied", description: errorMessage, variant: "destructive" });
         }
       } catch (error) {
         console.error('Error checking tool access:', error);
-        
         setAccessStatus({
           hasAccess: false,
           isLoading: false,
           error: 'Unable to verify access. Please try again.',
-          retryCount: 0,
-          lastChecked: null,
+          retryCount: accessStatus.retryCount + 1,
+          lastChecked: new Date(),
           subscriptionStatus: null,
           errorCode: 'NETWORK_ERROR',
-          canRetry: true
+          canRetry: accessStatus.retryCount < 3,
         });
-
-        toast({
-          title: "Connection Error",
-          description: "Unable to verify subscription status. Please check your connection and try again.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Could not verify tool access.", variant: "destructive" });
       }
     }
 
-    if (!loading) {
-      checkAccess();
-    }
-  }, [user?.id, loading, toast]);
+    checkAccess();
+  }, [user, userLoading, toast, router, accessStatus.retryCount, supabaseClient]);
 
   // Enhanced retry logic with exponential backoff
   const retryAccessCheck = useCallback(async () => {
@@ -334,68 +333,153 @@ export default function InvoiceReconcilerPage() {
     };
   };
 
-  // Handle airline selection with enhanced validation feedback and loading states
-  const handleAirlineChange = async (airlineId: string | null) => {
-    // Start processing state
+  // Handle airline selection with enhanced validation and state management
+  const handleAirlineChange = useCallback(async (airlineId: string | null) => {
     setWorkflow(prev => ({
       ...prev,
-      isProcessingSelection: true,
-      validationError: null
+      isProcessingSelection: true, // Indicate processing airline change
+      selectedAirline: airlineId, // Store the selected airline identifier (e.g., its code or name)
+      selectedAirlineData: null, // Clear previous airline data
+      selectedInvoiceId: null, // Reset selected invoice
+      selectedFile: null,      // Reset any selected file for upload
+      validationError: null,
+      canProceed: false,
     }));
 
-    // Simulate processing time for airline selection validation (realistic for API calls)
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const validation = validateAirlineSelection(airlineId);
-    
     if (airlineId) {
-      const selectedAirlineData = AIRLINES.find(airline => airline.id === airlineId);
+      const airlineData = AIRLINES.find(a => a.id === airlineId);
       
-      if (selectedAirlineData) {
+      if (airlineData) {
+        const validation = validateAirlineSelection(airlineId);
+         if (airlineData.status === 'coming-soon') {
+            toast({
+                title: "Coming Soon!",
+                description: `${airlineData.name} reconciliation is not yet available.`,
+                variant: "default",
+            });
+            setWorkflow(prev => ({
+                ...prev,
+                selectedAirlineData: airlineData,
+                isProcessingSelection: false,
+                validationError: validation.error, // Use validation error
+                canProceed: validation.canProceed, // Use validation canProceed
+            }));
+            return;
+        }
         setWorkflow(prev => ({
           ...prev,
-          selectedAirline: airlineId,
-          selectedAirlineData,
-          isValidSelection: validation.isValid,
-          canProceed: validation.canProceed,
+          selectedAirlineData: airlineData,
+          // currentStep: 'invoice-upload', // DO NOT move to next step here
+          isProcessingSelection: false,
+          canProceed: validation.canProceed, // Set based on validation
           validationError: validation.error,
-          isProcessingSelection: false
         }));
-
-        // Show enhanced airline selection feedback
-        if (validation.canProceed) {
-          toast({
-            title: `${selectedAirlineData.name} Selected`,
-            description: `Ready to proceed with ${selectedAirlineData.name} reconciliation`,
-            variant: "default",
-          });
-        } else if (selectedAirlineData.status === 'coming-soon') {
-          toast({
-            title: `${selectedAirlineData.name} Coming Soon`,
-            description: `${selectedAirlineData.name} reconciliation is not yet available`,
-            variant: "destructive",
-          });
-        }
+        // setInvoiceManagerKey(Date.now()); // This might not be needed here anymore, or moved to handleNextStep
+      } else {
+        setWorkflow(prev => ({
+          ...prev,
+          isProcessingSelection: false,
+          validationError: "Selected airline data not found.",
+          canProceed: false,
+        }));
+        toast({ title: "Error", description: "Selected airline data not found.", variant: "destructive" });
       }
     } else {
       setWorkflow(prev => ({
         ...prev,
+        // currentStep: 'airline-selection', // Already in this step or should be handled by navigation
+        isProcessingSelection: false,
         selectedAirline: null,
         selectedAirlineData: null,
-        isValidSelection: false,
+        validationError: validateAirlineSelection(null).error, // Re-validate with null
         canProceed: false,
-        validationError: validation.error,
-        isProcessingSelection: false
       }));
     }
+  }, [toast]);
+
+  // Callback for when FileUpload component successfully uploads and saves a new invoice
+  const handleNewInvoiceUploaded = useCallback((newlySavedInvoice: SavedInvoice) => {
+    toast({
+      title: "New Invoice Added",
+      description: `"${newlySavedInvoice.original_filename}" has been saved and is now selected.`,
+      variant: "success",
+    });
+    setWorkflow(prev => {
+      const validation = validateInvoiceSelection(newlySavedInvoice.id, null);
+      return {
+        ...prev,
+        selectedInvoiceId: newlySavedInvoice.id,
+        selectedFile: null,
+        isValidSelection: validation.isValid,
+        canProceed: validation.canProceed,
+        validationError: validation.error,
+      };
+    });
+    setInvoiceManagerKey(Date.now());
+  }, [toast]);
+
+  // Overall validation logic for the current step (invoice selection/upload)
+  useEffect(() => {
+    if (workflow.currentStep === 'invoice-upload') {
+      const isValid = !!workflow.selectedInvoiceId; // True if an existing or newly uploaded invoice is selected
+      const error = isValid ? null : "Please select an existing invoice or upload a new one.";
+      
+      setWorkflow(prev => ({
+        ...prev,
+        isValidSelection: isValid,
+        canProceed: isValid, // Can proceed if a valid invoice is selected/uploaded
+        validationError: prev.selectedAirlineData && !isValid && !prev.isProcessingSelection ? error : prev.validationError,
+      }));
+    }
+  }, [workflow.selectedInvoiceId, workflow.currentStep, workflow.selectedAirlineData, workflow.isProcessingSelection]);
+  
+  const handleInvoiceSelect = (invoiceId: string) => {
+    setWorkflow(prev => ({
+      ...prev,
+      selectedInvoiceId: invoiceId,
+      selectedFile: null, // Clear file selection when selecting existing invoice
+      ...validateInvoiceSelection(invoiceId, null)
+    }));
+  };
+
+  const validateInvoiceSelection = (invoiceId: string | null = workflow.selectedInvoiceId, file: File | null = workflow.selectedFile): { isValid: boolean; canProceed: boolean; error: string | null } => {
+    // Must have either an existing invoice selected OR a new file selected, but not both
+    const hasInvoice = !!invoiceId;
+    const hasFile = !!file;
+    
+    if (!hasInvoice && !hasFile) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please either select an existing invoice or upload a new invoice file.'
+      };
+    }
+
+    if (hasInvoice && hasFile) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please choose either an existing invoice OR upload a new file, not both.'
+      };
+    }
+
+    return {
+      isValid: true,
+      canProceed: true,
+      error: null
+    };
   };
 
   // Enhanced navigation to next step with validation
   const handleNextStep = () => {
-    // Validate current step before proceeding
     if (workflow.currentStep === 'airline-selection') {
       const validation = validateAirlineSelection(workflow.selectedAirline);
-      
+      setWorkflow(prev => ({
+        ...prev,
+        validationError: validation.error,
+        canProceed: validation.canProceed
+      }));
+
       if (!validation.canProceed) {
         toast({
           title: "Selection Required",
@@ -404,42 +488,67 @@ export default function InvoiceReconcilerPage() {
         });
         return;
       }
+
+      setWorkflow(prev => ({
+        ...prev,
+        currentStep: 'invoice-upload',
+        selectedInvoiceId: null,
+        selectedFile: null,
+        validationError: null,
+        canProceed: false,
+      }));
+      setInvoiceManagerKey(Date.now()); 
+      return; 
     }
 
-    if (!workflow.canProceed) {
-      toast({
-        title: "Cannot Proceed",
-        description: "Please complete the required selection for this step",
-        variant: "destructive",
-      });
+    if (workflow.currentStep === 'invoice-upload') {
+      const validation = validateInvoiceSelection();
+      setWorkflow(prev => ({
+        ...prev,
+        validationError: validation.error,
+        canProceed: validation.canProceed
+      }));
+
+      if (!validation.canProceed) {
+        toast({
+          title: "Invoice Required",
+          description: validation.error || "Please select an invoice before proceeding",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setWorkflow(prev => ({
+        ...prev,
+        currentStep: 'report-upload',
+        validationError: null,
+        canProceed: false, // Next step (report upload) will need its own validation
+      }));
+      // Potentially reset report selection states here if any
       return;
     }
 
-    switch (workflow.currentStep) {
-      case 'airline-selection':
-        setWorkflow(prev => ({ ...prev, currentStep: 'invoice-upload' }));
-        toast({
-          title: "Step 2: Invoice Upload",
-          description: `Ready to upload ${workflow.selectedAirlineData?.name} invoice.`,
-          variant: "default",
-        });
-        break;
-      case 'invoice-upload':
-        setWorkflow(prev => ({ ...prev, currentStep: 'report-upload' }));
-        toast({
-          title: "Step 3: Report Upload",
-          description: "Ready to upload Excel report file.",
-          variant: "default",
-        });
-        break;
-      case 'report-upload':
-        setWorkflow(prev => ({ ...prev, currentStep: 'processing' }));
-        toast({
-          title: "Processing Started",
-          description: "Reconciliation process has begun.",
-          variant: "default",
-        });
-        break;
+    if (workflow.currentStep === 'report-upload') {
+      // Placeholder for report upload validation and progression logic
+      // const reportValidation = validateReportSelection(); // Assuming a function like this
+      // if (!reportValidation.canProceed) {
+      //   toast({ title: "Report Required", description: reportValidation.error, variant: "destructive" });
+      //   return;
+      // }
+      // setWorkflow(prev => ({ ...prev, currentStep: 'processing' }));
+      // return;
+      console.log("Proceeding from report-upload. Validation pending.");
+       toast({title: "Dev Note", description: "Report upload and processing step not fully implemented in handleNextStep."}) 
+    }
+    
+    // Default case if canProceed was true but step not handled above explicitly for progression logic
+    // This might indicate a state where UI allowed 'Next' but logic isn't here, or it's the final step.
+    if (!workflow.canProceed && workflow.currentStep !== 'completed') { // Check canProceed from state
+       toast({
+        title: "Cannot Proceed",
+        description: workflow.validationError || "Please complete the current step correctly.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -502,7 +611,7 @@ export default function InvoiceReconcilerPage() {
   };
 
   // Loading state
-  if (loading || accessStatus.isLoading) {
+  if (userLoading || accessStatus.isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-violet-50">
         <div className="container mx-auto px-4 py-8">
@@ -888,22 +997,72 @@ export default function InvoiceReconcilerPage() {
 
               {workflow.currentStep === 'invoice-upload' && (
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-violet-50 rounded-xl p-8 border border-blue-100">
-                    <div className="flex items-center gap-3 mb-6">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
-                      <p className="text-gray-800 font-semibold text-lg">
-                        Upload {workflow.selectedAirlineData?.name} Invoice
+                  <InvoiceManager
+                    selectedAirline={workflow.selectedAirline}
+                    selectedInvoiceId={workflow.selectedInvoiceId}
+                    onInvoiceSelect={handleInvoiceSelect}
+                  />
+                  
+                  {/* Validation Feedback */}
+                  {workflow.validationError && !workflow.canProceed && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                        <p className="text-red-800 font-medium">
+                          {workflow.validationError}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Selection Success Feedback - Existing Invoice */}
+                  {workflow.selectedInvoiceId && workflow.canProceed && !workflow.selectedFile && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <p className="text-green-800 font-medium">
+                          Saved invoice selected successfully
+                        </p>
+                      </div>
+                      <p className="text-green-700 text-sm mt-2">
+                        Click "Continue" to proceed to Excel report upload
                       </p>
                     </div>
-                    <p className="text-gray-600 mb-6">
-                      Drop your {workflow.selectedAirlineData?.name} PDF invoice here or click to browse
-                    </p>
-                    <div className="bg-white rounded-xl p-12 border-2 border-dashed border-blue-200 text-center hover:border-blue-300 transition-colors">
-                      <Upload className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg mb-2">Invoice upload interface will be implemented here</p>
-                      <p className="text-sm text-gray-500">
-                        📄 PDF Invoice: {workflow.selectedAirlineData?.name}-specific format
+                  )}
+
+                  {/* File Upload Success Feedback */}
+                  {workflow.selectedFile && workflow.canProceed && !workflow.selectedInvoiceId && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <p className="text-green-800 font-medium">
+                          New invoice file ready for upload
+                        </p>
+                      </div>
+                      <p className="text-green-700 text-sm mt-2">
+                        File: {workflow.selectedFile.name} • Click "Continue" to proceed to Excel report upload
                       </p>
+                    </div>
+                  )}
+                  
+                  {/* Upload New Invoice Option - Placeholder for Task 8.5 */}
+                  <div className="bg-gradient-to-r from-blue-50 to-violet-50 rounded-xl p-6 border border-blue-100">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Upload className="h-6 w-6 text-blue-500" />
+                      <p className="text-gray-800 font-semibold">
+                        Or Upload New {workflow.selectedAirlineData?.name} Invoice
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-xl p-8 border-2 border-dashed border-blue-200 text-center hover:border-blue-300 transition-colors">
+                      <FileUpload
+                        supabase={supabaseClient!}
+                        userId={user?.id}
+                        selectedAirline={workflow.selectedAirlineData?.name || null}
+                        selectedAirlineId={workflow.selectedAirlineData?.id || null}
+                        onFileUploadComplete={handleNewInvoiceUploaded}
+                        disabled={!supabaseClient || workflow.isProcessingSelection || !workflow.selectedAirlineData || workflow.selectedAirlineData.status !== 'active'}
+                        className="h-full"
+                      />
                     </div>
                   </div>
                 </div>
@@ -999,7 +1158,7 @@ export default function InvoiceReconcilerPage() {
                   )}
                   
                   {/* Loading states for airline selection */}
-                  {workflow.currentStep === 'airline-selection' && (workflow.isLoadingAirlines || workflow.isProcessingSelection) && (
+                  {(workflow.isLoadingAirlines || workflow.isProcessingSelection) && (
                     <Button
                       disabled
                       className="bg-blue-300 text-blue-700 font-semibold px-10 py-3 text-base cursor-not-allowed"
@@ -1033,19 +1192,34 @@ export default function InvoiceReconcilerPage() {
                       )}
                     </>
                   )}
+
+                  {!workflow.canProceed && workflow.currentStep === 'invoice-upload' && !workflow.isLoadingAirlines && !workflow.isProcessingSelection && (
+                    <>
+                      <Button
+                        disabled
+                        className="bg-gray-300 text-gray-500 font-semibold px-10 py-3 text-base cursor-not-allowed"
+                      >
+                        Select Invoice to Continue
+                      </Button>
+                      {workflow.validationError && (
+                        <p className="text-sm text-red-600 text-right">
+                          {workflow.validationError}
+                        </p>
+                      )}
+                    </>
+                  )}
                   
                   {/* Validation feedback for coming soon airlines */}
-                  {workflow.selectedAirlineData && !workflow.canProceed && workflow.selectedAirlineData.status === 'coming-soon' && (
+                  {workflow.selectedAirlineData?.status === 'coming-soon' && workflow.currentStep === 'airline-selection' && (
                     <>
                       <Button
                         disabled
                         className="bg-yellow-300 text-yellow-800 font-semibold px-10 py-3 text-base cursor-not-allowed"
                       >
-                        <Clock className="h-4 w-4 mr-2" />
                         Coming Soon
                       </Button>
                       <p className="text-sm text-yellow-700 text-right">
-                        {workflow.selectedAirlineData.name} reconciliation will be available soon
+                        {workflow.selectedAirlineData.name} support is under development
                       </p>
                     </>
                   )}

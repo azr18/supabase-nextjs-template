@@ -38,7 +38,7 @@ CREATE POLICY "Anyone can view active tools"
 ON "public"."tools"
 AS PERMISSIVE
 FOR SELECT
-TO PUBLIC
+TO authenticated
 USING (status = 'active' OR auth.role() = 'service_role');
 
 -- Create RLS policy: Only service_role can manage tools

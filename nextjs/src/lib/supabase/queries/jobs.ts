@@ -1,4 +1,4 @@
-import { createSPAClient } from '@/lib/supabase/client';
+import { createSPASassClient } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 
 type ReconciliationJob = Database['public']['Tables']['reconciliation_jobs']['Row'];
@@ -16,7 +16,8 @@ export async function getRecentJobsForUser(
   userId: string, 
   limit: number = 10
 ): Promise<JobWithToolInfo[]> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     // Get recent jobs for the user
@@ -46,7 +47,8 @@ export async function getRecentJobsForUser(
  * Get a specific job by ID for the authenticated user
  */
 export async function getJobById(jobId: string, userId: string): Promise<JobWithToolInfo | null> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     const { data: job, error: jobError } = await supabase
@@ -83,7 +85,8 @@ export async function getJobsByStatus(
   status: string,
   limit: number = 20
 ): Promise<JobWithToolInfo[]> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     const { data: jobs, error: jobsError } = await supabase
@@ -117,7 +120,8 @@ export async function getJobsByAirline(
   airlineType: string,
   limit: number = 20
 ): Promise<JobWithToolInfo[]> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     const { data: jobs, error: jobsError } = await supabase

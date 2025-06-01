@@ -177,27 +177,27 @@ Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md`
   - [x] 7.12 Create Playwright tests for dynamic interface updates and validation flows, then demonstrate airline selection interface for user acceptance
 
 - [ ] 8.0 Invoice Reconciler - Invoice Selection & Management System (Step 2: Select or Upload Invoice)
-  - [ ] 8.1 Create saved invoices query utility for fetching user invoices by airline
-  - [ ] 8.2 Create InvoiceManager component to display saved invoices for selected airline
-  - [ ] 8.3 Implement saved invoice list with filename, upload date, file size display
-  - [ ] 8.4 Add invoice selection functionality (radio buttons or similar for choosing existing invoice)
-  - [ ] 8.5 Create FileUpload component for PDF invoices with basic upload functionality
-  - [ ] 8.6 Add drag-and-drop functionality to PDF upload component
-  - [ ] 8.7 Implement client-side file validation (PDF type, size up to 25MB)
-  - [ ] 8.8 Create file hash generation utility using SHA-256 for duplicate detection
-  - [ ] 8.9 Create duplicate detection utility comparing hash/filename/size
-  - [ ] 8.10 Create Supabase storage upload utility with proper file organization (user_id/airline_type/)
-  - [ ] 8.11 Integrate InvoiceManager and FileUpload into step 2 workflow (select existing OR upload new)
-  - [ ] 8.12 Add delete functionality for saved invoices in InvoiceManager
-  - [ ] 8.13 Implement upload progress indicators and success/error feedback
-  - [ ] 8.14 Create storage quota tracking and enforcement (100MB per user)
-  - [ ] 8.15 Add validation logic to ensure either existing invoice selected OR new invoice uploaded
-  - [ ] 8.16 Create automated tests for invoice selection functionality
-  - [ ] 8.17 Create automated tests for file upload and duplicate detection
-  - [ ] 8.18 Create automated tests for invoice management operations, then demonstrate invoice selection/upload for user acceptance
-  - [ ] 8.19 Create Playwright tests for invoice selection workflow (existing vs new upload)
-  - [ ] 8.20 Create Playwright tests for drag-and-drop file upload interactions
-  - [ ] 8.21 Create Playwright tests for duplicate detection and invoice management flows, then demonstrate complete invoice selection system for user acceptance
+  - [x] 8.1 Create saved invoices query utility for fetching user invoices by airline
+  - [x] 8.2 Create InvoiceManager component to display saved invoices for selected airline
+  - [x] 8.3 Implement saved invoice list with filename, upload date, file size display
+  - [x] 8.4 Add invoice selection functionality (radio buttons or similar for choosing existing invoice)
+  - [x] 8.5 Create FileUpload component for PDF invoices with basic upload functionality
+  - [x] 8.6 Add drag-and-drop functionality to PDF upload component
+  - [x] 8.7 Implement client-side file validation (PDF type, size up to 25MB)
+  - [x] 8.8 Create file hash generation utility using SHA-256 for duplicate detection
+  - [xg] 8.9 Create duplicate detection utility comparing hash/filename/size
+  - [x] 8.10 Create Supabase storage upload utility with proper file organization (user_id/awhirline_type/)
+  - [x] 8.11 Integrate InvoiceManager and FileUpload into step 2 workflow (select existing OR upload new)
+  - [x] 8.12 Add delete functionality for saved invoices in InvoiceManager
+  - [x] 8.13 Implement upload progress indicators and success/error feedback
+  - [x] 8.14 Create storage quota tracking and enforcement (100MB per user)
+  - [x] 8.15 Add validation logic to ensure either existing invoice selected OR new invoice uploaded
+  - [x] 8.16 Create automated tests for invoice selection functionality
+  - [x] 8.17 ~~Create automated tests for file upload and duplicate detection~~ (Skipped per user request)
+  - [x] 8.18 Demonstrate invoice selection, upload, and management operations for user acceptance (Automated tests for management operations skipped per user request)
+  - [x] 8.19 ~~Create Playwright tests for invoice selection workflow (existing vs new upload)~~ (Skipped per user request)
+  - [x] 8.20 ~~Create Playwright tests for drag-and-drop file upload interactions~~ (Skipped per user request)
+  - [x] 8.21 Demonstrate complete invoice selection system including duplicate detection and management flows for user acceptance (Playwright tests skipped per user request)
 
 - [ ] 9.0 Invoice Reconciler - Excel Report Upload System (Step 3: Upload Excel Report)
   - [ ] 9.1 Create FileUpload component for Excel reports (standardized format)

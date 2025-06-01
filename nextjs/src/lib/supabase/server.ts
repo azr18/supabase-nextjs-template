@@ -1,28 +1,40 @@
-import {createServerClient} from '@supabase/ssr'
+import {createServerClient, type CookieOptions} from '@supabase/ssr'
 import {cookies} from 'next/headers'
-import {ClientType, SassClient} from "@/lib/supabase/unified";
-import {Database} from "@/lib/types";
 
-export async function createSSRClient() {
+export async function createClient() {
     const cookieStore = await cookies()
 
-    return createServerClient<Database>(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase URL or Anon Key is not defined in environment variables.')
+    }
+
+    return createServerClient(
+        supabaseUrl,
+        supabaseAnonKey,
         {
             cookies: {
-                getAll() {
-                    return cookieStore.getAll()
+                get(name: string) {
+                    return cookieStore.get(name)?.value;
                 },
-                setAll(cookiesToSet) {
+                set(name: string, value: string, options: CookieOptions) {
                     try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing
-                        // user sessions.
+                        cookieStore.set({ name, value, ...options });
+                    } catch (error) {
+                        // Errors can occur if trying to set cookies from a Server Component.
+                        // Usually, middleware handles session refresh and cookie setting.
+                        // Log error for visibility, but don't break execution if benign.
+                        // console.warn('Failed to set cookie from server client:', error);
+                    }
+                },
+                remove(name: string, options: CookieOptions) {
+                    try {
+                        cookieStore.set({ name, value: '', ...options });
+                    } catch (error) {
+                        // Errors can occur if trying to delete cookies from a Server Component.
+                        // console.warn('Failed to remove cookie from server client:', error);
                     }
                 },
             }
@@ -30,9 +42,10 @@ export async function createSSRClient() {
     )
 }
 
-
-
-export async function createSSRSassClient() {
-    const client = await createSSRClient();
-    return new SassClient(client, ClientType.SERVER);
-}
+// If your project was using a createSSRSassClient, 
+// it should be updated to use the synchronous createSupabaseServerClient:
+// import { ClientType, SassClient } from "@/lib/supabase/unified"; // Assuming these types exist
+// export function createSSRSassServerClient() { // Changed to Server to avoid confusion
+//   const client = createSupabaseServerClient(); // No await
+//   return new SassClient(client, ClientType.SERVER);
+// }

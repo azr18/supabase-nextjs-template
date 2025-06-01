@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSSRClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { getUserActiveSubscriptions, checkUserToolAccess, UserSubscription, SubscriptionCheckResult } from '@/lib/auth/subscriptions';
 
 interface SubscriptionResponse {
@@ -16,7 +16,7 @@ interface ToolCheckResponse {
 export async function GET(request: NextRequest) {
   try {
     // Create authenticated Supabase client
-    const supabase = await createSSRClient();
+    const supabase = await createClient();
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();

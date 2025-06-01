@@ -1,194 +1,148 @@
-# Task List: Invoice Reconciler Tool Implementation (Phase 2 - Fly Dubai Backend & Reporting)
-
-Based on PRD: `docs/prd-supabase-saas-invoice-reconciler.md` (updated to reflect `pdfplumber` usage in source Python script `app(1).py`)
-
-## From Original Task List
-
-- **IMPORTANT - Directory Navigation:**
-  - **Next.js commands (npm run dev, npm run build, etc.):** Must be run from `nextjs/` directory
-  - **Supabase commands:** Run from `supabase/` directory
-  - **Database migrations:** Run from `supabase/` directory
-  - **Root-level commands:** Only for project-wide operations like Playwright tests
-  - **PowerShell Syntax:** Use `cd nextjs; npm run dev` or separate commands on new lines
-- **Landing Page Gradient Color Scheme (for consistency across all sections):**
-  - **Main Headlines:** `from-primary via-blue-600 to-violet-600`
-  - **Primary Buttons/CTAs:** `from-gray-800 via-blue-500 to-blue-600`
-  - **Secondary Buttons:** `from-blue-600 via-violet-500 to-violet-700`
-  - **Feature Icons/Cards:** Progressive gradient flow through blue-violet-purple spectrum:
-    - `from-gray-800 via-blue-500 to-blue-600`
-    - `from-blue-600 via-blue-500 to-violet-500`
-    - `from-blue-500 via-violet-500 to-violet-600`
-    - `from-violet-500 via-violet-600 to-purple-600`
-    - `from-violet-600 via-purple-500 to-purple-600`
-    - `from-purple-500 via-purple-600 to-violet-700`
-  - **Background Sections:** `from-gray-800 via-blue-500 to-blue-600` for main sections
-  - **Text Colors on Gradients:** `text-white` for icons, `text-blue-100` for descriptive text
-  - **Hover Effects:** `hover:scale-105`, `hover:shadow-xl`, `border-blue-200` for consistency
-- **Navigation Bar Design:** "My Agent" branded navigation with modern responsive design, featuring blue gradient theme throughout, mobile hamburger menu, smooth animations, and clean anchor link navigation
-- **Process Section Design:** Sophisticated brainpool.ai-inspired visual design with meaningful icons for each step, 3D-style step number boxes, enhanced visual hierarchy, phase badges, glow effects, hover animations, and modern timeline section
-- **Agentic Testing:** AI agent handles all technical testing including:
-  - **Unit Tests:** Component and utility function testing (Jest/Vitest)
-  - **Integration Tests:** API endpoint and database integration testing
-  - **End-to-End Tests:** Playwright MCP for browser automation, user flows, and UI interactions
-  - **Visual Tests:** Playwright for responsive design and visual regression testing
-- **User Testing:** User only performs business acceptance testing (does it meet requirements?) after agent completes all technical testing
-- Use `npx jest [optional/path/to/test/file]` for unit/integration tests
-- Use `npx playwright test [optional/test/file]` for end-to-end tests (handled by AI agent)
-- Storage bucket policies must enforce 100MB per user quota
-- All new database operations should leverage RLS policies for security
-- **Testing Protocol:** Each sub-task marked "Test" means the AI agent should write and run automated tests (unit, integration, and Playwright e2e), then demonstrate functionality to user for acceptance
-
-## Summarized Completed Work
-
-**Foundation Work (Tasks 1-5) ✅:**
-Complete database schema (tools, subscriptions, invoices, jobs, airlines), RLS policies, Supabase storage (100MB quota), Google OAuth + email/password authentication, subscription-based route protection, professional landing page, production-ready customer dashboard (ToolCard, RecentJobs), and manual admin subscription management.
-
-**Dashboard UI Redesign (Task 6.0) ✅:**
-Comprehensive visual theme consistency applied across the dashboard, login/register pages, and app layout, aligning with the "My Agent" branding and blue gradient scheme of the landing page. All functionality preserved. Automated visual regression and Playwright tests created and passed.
-
-**Core Invoice Reconciler Interface & Airline Selection (Task 7.0) ✅:**
-Main UI for the Invoice Reconciler tool is complete. This includes the main page, a functional `AirlineSelector` component (supporting Fly Dubai and other listed airlines), airline selection state management, dynamic UI updates, airline-specific instruction display, invoice selection validation, subscription checks, loading states, error handling, and associated automated tests.
-
-**File Management & Storage System for Invoice Reconciler (Task 8.0) ✅:**
-Robust file handling capabilities are implemented. This includes `FileUpload` components for PDF invoices and Excel reports (with drag-and-drop), client-side validation (type, 25MB size limit), file hash generation (SHA-256) and duplicate detection utilities, Supabase storage integration for organized file uploads, a functional `InvoiceManager` component for displaying/filtering/deleting saved invoices, progress indicators, user feedback, and enforcement of the 100MB per-user storage quota. Associated automated tests are complete.
-
-## Detailed Tasks: Fly Dubai Reconciler Implementation (Backend & Reporting)
-
-### 9.0 Invoice Reconciler - Reconciliation Processing Engine (Fly Dubai Focus)
-
-- [ ] 9.1 Create `BaseProcessor.ts` abstract class in `nextjs/src/lib/processors/base/` with a common processing interface (e.g., `process(invoiceFileBuffer: Buffer, reportFileBuffer: Buffer): Promise<ReconciliationResult>`).
-    - [ ] 9.1.1 Define `ReconciliationResult` interface (e.g., `{ success: boolean; data?: any; reportBuffer?: Buffer; error?: string; }`).
-- [ ] 9.2 PDF Data Extraction Utility (`nextjs/src/lib/processors/utils/pdfExtractor.ts`)
-  - [ ] 9.2.1 Research and select the most suitable Node.js PDF library to replicate `pdfplumber`'s layout-aware text extraction capabilities as used in `app(1).py` (e.g., `extract_text(x_tolerance=2, layout=True)` for Fly Dubai PDFs). Consider libraries like `pdfjs-dist` (Mozilla's PDF.js) or other alternatives that provide detailed text positioning and page structure information.
-  - [ ] 9.2.2 Implement a wrapper/utility function in `pdfExtractor.ts` using the chosen library. This function should take a PDF buffer and return page-by-page text content along with any necessary layout information (e.g., text coordinates, line breaks that respect layout) required by `FlyDubaiProcessor.ts`.
-- [ ] 9.3 Excel Data Extraction Utility (`nextjs/src/lib/processors/utils/excelExtractor.ts`)
-  - [ ] 9.3.1 Define the standardized Excel report structure based on `app(1).py` (e.g., header on row 8, key columns: `awbprefix`, `awbsuffix`, `chargewt`, `frt_cost_rate`, `total_cost`). Document this expected structure.
-  - [ ] 9.3.2 Implement logic in `excelExtractor.ts` using `exceljs` to read the standardized Excel report according to the defined structure, returning data as an array of objects. Ensure proper handling of data types.
-- [ ] 9.4 Create `FlyDubaiProcessor.ts` class in `nextjs/src/lib/processors/flyDubai/` extending `BaseProcessor`.
-- [ ] 9.5 Implement PDF data extraction logic specifically for Fly Dubai invoices within `FlyDubaiProcessor.ts`:
-  - [ ] 9.5.1 Port all relevant **RegEx patterns** for AWB and CCA data from `app(1).py`'s `extract_awb_data` and `extract_cca_data` functions to JavaScript RegEx. Store these clearly within the processor.
-  - [ ] 9.5.2 Implement a method within `FlyDubaiProcessor.ts` (e.g., `_extractAwbData`) that uses the `pdfExtractor.ts` utility. This method should replicate the logic from Python's `extract_awb_data` to process the layout-aware text, apply RegEx, and structure the extracted AWB data (e.g., into an array of AWB data objects). Include dynamic page range detection for AWB data.
-  - [ ] 9.5.3 Implement a method within `FlyDubaiProcessor.ts` (e.g., `_extractCcaData`) that uses the `pdfExtractor.ts` utility. This method should replicate the logic from Python's `extract_cca_data` to process layout-aware text, apply RegEx, and structure the extracted CCA data. Include dynamic CCA page detection.
-- [ ] 9.6 Implement the main reconciliation logic within the `process` method of `FlyDubaiProcessor.ts`:
-  - [ ] 9.6.1 Call internal methods (`_extractAwbData`, `_extractCcaData`) to get structured data from the invoice PDF.
-  - [ ] 9.6.2 Use `excelExtractor.ts` to get structured data from the report Excel file.
-  - [ ] 9.6.3 Re-implement data cleaning, string manipulation (e.g., for currency, dates), and numeric conversion logic (similar to `pandas` operations in `app(1).py`) for the extracted AWB, CCA, and report data.
-  - [ ] 9.6.4 Re-implement the merge/join logic: Combine cleaned AWB data with the cleaned report data based on AWB Prefix and Serial.
-  - [ ] 9.6.5 Re-implement difference calculations (e.g., `Diff Net Due`) and discrepancy flagging logic based on `app(1).py`.
-  - [ ] 9.6.6 Structure the final processed data (AWB, CCA, reconciled data) to be returned by the `process` method, suitable for report generation.
-- [ ] 9.19 Implement/Update the main reconciliation API endpoint in `nextjs/src/app/api/reconcile/route.ts`.
-  - [ ] 9.19.1 API accepts `airlineType`, `invoiceFileId`, `reportFileId` (and user context from auth).
-  - [ ] 9.19.2 Implement logic to fetch corresponding file buffers from Supabase Storage using `invoiceFileId` and `reportFileId` (from `saved_invoices` table and job input).
-  - [ ] 9.19.3 Implement dynamic processor instantiation (if `airlineType` is 'flydubai', instantiate `FlyDubaiProcessor`).
-  - [ ] 9.19.4 Call the processor's `process` method with the file buffers.
-- [ ] 9.20 Implement job creation and status updates in `nextjs/src/app/api/reconcile/route.ts`:
-  - [ ] 9.20.1 Before processing, create a job record in `reconciliation_jobs` table with 'pending' or 'processing' status, linking to the `saved_invoice_id` and storing the report file path used for the job.
-  - [ ] 9.20.2 After processing, update the job status to 'completed' or 'failed'. If successful, store the path/ID to the generated report file (from Task 10) in the job record.
-- [ ] 9.21 Ensure status tracking in `reconciliation_jobs` table is comprehensive for various stages.
-- [ ] 9.22 Implement robust error handling and logging within processors and the API. If processing fails, update job status to 'failed' with an error message.
-- [ ] 9.23 Test: Create automated tests for `FlyDubaiProcessor.ts`.
-    - [ ] 9.23.1 Prepare sample data: Use `2503013781418TLV010936_25-25.pdf` and a corresponding sample Excel report (that `app(1).py` processes successfully) as test fixtures.
-    - [ ] 9.23.2 Write unit tests (Jest/Vitest) for individual methods within `FlyDubaiProcessor.ts` (e.g., `_extractAwbData`, `_extractCcaData`, data cleaning, merge logic, difference calculation). Assert correct output structures and values against expected results based on `app(1).py`.
-- [ ] 9.28 Test: Write integration tests for the `POST /api/reconcile` endpoint for Fly Dubai. Mock file fetching, call the API, and verify job record creation/updates in the (test) database. Demonstrate Fly Dubai reconciliation workflow for user acceptance (API level initially).
-- [ ] 9.29 Test: Update/Create Playwright end-to-end tests for the complete Fly Dubai reconciliation workflow (UI: select airline, upload files -> API call is triggered -> verify job status eventually becomes 'completed' in UI).
-- [ ] 9.30 Test: Enhance Playwright tests to cover job status tracking UI updates (polling or real-time) and error handling scenarios specifically for Fly Dubai processing, then demonstrate processing engine and UI feedback for user acceptance.
-
-### 10.0 Invoice Reconciler - Results & Reporting System (Fly Dubai Focus)
-
-- [ ] 10.1 Create Excel report generation utility (`nextjs/src/lib/processors/utils/reportGenerator.ts`) using `exceljs`.
-  - [ ] 10.1.1 Define the multi-sheet Excel report structure for Fly Dubai based on `app(1).py` output (Sheets: Summary, Reconciliation, Invoices, CCA). Document column orders, data types, and expected content for each.
-- [ ] 10.2 Implement a function in `reportGenerator.ts` (e.g., `generateFlyDubaiReport(processedData: any): Promise<Buffer>`) that takes the structured output from `FlyDubaiProcessor.process` and generates the multi-sheet Excel file as a Buffer.
-- [ ] 10.3 Within `generateFlyDubaiReport`, implement conditional formatting to highlight discrepancies for Fly Dubai reports, mirroring `app(1).py`'s `openpyxl` formatting (e.g., yellow fill for rows, red/orange for specific mismatched cells, bright red with thick borders for `Diff Net Due`).
-- [ ] 10.4 Within `generateFlyDubaiReport`, implement summary sheet generation, calculating and displaying metrics as in `app(1).py`.
-- [ ] 10.5 Within `generateFlyDubaiReport`, implement reconciliation sheet generation, showing side-by-side comparisons and discrepancies, matching `app(1).py` output.
-- [ ] 10.6 Within `generateFlyDubaiReport`, implement Fly Dubai-specific report formatting (table styles, column autofitting) for the "Invoices" and "CCA" sheets, as well as overall report aesthetics, to match `app(1).py` output.
-- [ ] 10.7 Implement secure report file upload to Supabase Storage within the `POST /api/reconcile` route after successful report generation by `reportGenerator.ts`. Store the file path/ID in the `reconciliation_jobs` record.
-- [ ] 10.8 Update/Create `JobHistory.tsx` component (or use `RecentJobs.tsx` if suitable) to display past reconciliations for the Invoice Reconciler tool, fetching data from `reconciliation_jobs`.
-- [ ] 10.9 Ensure job status in `JobHistory.tsx` correctly reflects 'completed', 'failed', 'processing'.
-- [ ] 10.10 Implement download links in `JobHistory.tsx` for completed jobs. These links should point to a new secure download API endpoint.
-- [ ] 10.11 Create a secure file download API endpoint: `nextjs/src/app/api/download/[jobId]/route.ts`.
-    - [ ] 10.11.1 This endpoint takes a `jobId`, verifies user ownership of the job (RLS).
-    - [ ] 10.11.2 Retrieves the report file path from the `reconciliation_jobs` record.
-    - [ ] 10.11.3 Generates a Supabase Storage signed URL for the report file and facilitates download.
-- [ ] 10.13 Implement real-time (or polling-based) job status updates in the UI (on the main tool page and in `JobHistory.tsx`) reflecting backend job progress.
-- [ ] 10.14 Add report metadata display (e.g., original invoice filename, report generation date) to job history entries.
-- [ ] 10.15 Create cleanup procedures for temporary files generated during processing on the server (if any; buffers might not need disk writes).
-- [ ] 10.16 Define strategy for cleanup/archival of old `reconciliation_jobs` records and their associated report files in Supabase Storage (e.g., manual admin process or future automated policy).
-- [ ] 10.17 Test: Create automated unit tests for `reportGenerator.ts` specifically for `generateFlyDubaiReport`.
-    - [ ] 10.17.1 Using sample processed data (consistent with `FlyDubaiProcessor` output from task 9.23's tests), call `generateFlyDubaiReport`.
-    - [ ] 10.17.2 Assert that the returned Buffer is a valid Excel file. (Can parse it back with `exceljs` to check sheet names, some key cell values, or compare against a reference Excel file generated by `app(1).py`).
-- [ ] 10.18 Test: Create automated integration tests for the `GET /api/download/[jobId]` endpoint.
-- [ ] 10.19 Test: Demonstrate the complete Fly Dubai results workflow (job completion, report generation, storage, UI update, download availability) for user acceptance.
-- [ ] 10.20 Test: Enhance Playwright tests for `JobHistory.tsx` to include interactions with Fly Dubai job entries and verify status updates.
-- [ ] 10.21 Test: Enhance Playwright tests for file download workflows specifically for successfully completed Fly Dubai reports from the UI.
-- [ ] 10.22 Test: Consolidate Playwright end-to-end tests for the entire Fly Dubai user journey: Upload -> Process -> Job Status Updates -> View in History -> Download Report. Demonstrate this full cycle for user acceptance.
-
 ## Relevant Files
 
-**Supabase Project Information:**
-- **Project ID**: `hcyteovnllklmvoptxjr` (Active)
-- **Region**: us-east-1
-- **Organization**: By Nomi
-
-**Database Schema (Completed):**
-- `supabase/migrations/20241230130700_create_tools_table.sql`
-- `supabase/migrations/20241230130701_create_user_tool_subscriptions.sql`
-- `supabase/migrations/20241230130702_create_saved_invoices_table.sql`
-- `supabase/migrations/20241230130703_create_reconciliation_jobs_table.sql`
-- `supabase/migrations/20241230130704_create_airline_types_table.sql`
-- `supabase/migrations/20241230130705_create_rls_policies_tools.sql`
-- `supabase/migrations/20241230130706_create_rls_policies_invoices.sql`
-- `supabase/migrations/20241230130707_create_rls_policies_jobs.sql`
-- `supabase/migrations/20241230130708_create_storage_bucket.sql`
-- `supabase/migrations/20241230130709_create_storage_policies.sql`
-- `supabase/migrations/20241230130710_create_storage_quota.sql`
-- `nextjs/src/lib/supabase/types.ts` - Generated TypeScript types
-
-**Foundation Components (Completed):**
-- `nextjs/src/app/app/page.tsx` - Customer dashboard
-- `nextjs/src/components/Dashboard/ToolCard.tsx`
-- `nextjs/src/components/Dashboard/RecentJobs.tsx`
-- `nextjs/src/lib/supabase/queries/tools.ts`
-- `nextjs/src/lib/supabase/queries/jobs.ts`
-
-**Invoice Reconciler Foundational UI/File Mgmt (Completed):**
-- `nextjs/src/app/app/invoice-reconciler/page.tsx`
-- `nextjs/src/components/InvoiceReconciler/AirlineSelector.tsx`
-- `nextjs/src/components/InvoiceReconciler/InvoiceManager.tsx`
-- `nextjs/src/components/InvoiceReconciler/FileUpload.tsx`
-- `nextjs/src/lib/fileUtils/duplicateDetection.ts`
-- `nextjs/src/lib/fileUtils/storageManager.ts`
-- `nextjs/src/app/api/invoices/route.ts`
-
-**Invoice Reconciler Backend & Reporting (To be created/modified for Fly Dubai):**
-- `nextjs/src/app/api/reconcile/route.ts`
-- `nextjs/src/lib/processors/base/BaseProcessor.ts`
-- `nextjs/src/lib/processors/flyDubai/FlyDubaiProcessor.ts`
-- `nextjs/src/lib/processors/utils/pdfExtractor.ts`
-- `nextjs/src/lib/processors/utils/excelExtractor.ts`
-- `nextjs/src/lib/processors/utils/reportGenerator.ts`
-- `nextjs/src/app/api/jobs/route.ts` (primarily for fetching job statuses for UI)
-- `nextjs/src/app/api/download/[jobId]/route.ts`
-- `nextjs/src/components/InvoiceReconciler/JobHistory.tsx` (or updates to existing job display components)
-
-**Testing Files (To be created/updated for Fly Dubai):**
-- `tests/unit/processors/flyDubaiProcessor.spec.ts`
-- `tests/unit/utils/pdfExtractor.spec.ts`
-- `tests/unit/utils/excelExtractor.spec.ts`
-- `tests/unit/utils/reportGenerator.spec.ts`
-- `tests/integration/api/reconcile.spec.ts`
-- `tests/integration/api/download.spec.ts`
-- `tests/e2e/invoice-reconciler.spec.ts` (enhanced for Fly Dubai workflow)
+- `nextjs/src/lib/processors/base/BaseProcessor.ts` - Defines the abstract class and common interface for airline processors.
+- `nextjs/src/lib/processors/types.ts` - Contains TypeScript interfaces for reconciliation data structures.
+- `nextjs/src/lib/processors/utils/pdfExtractor.ts` - Utility providing a function to read PDF content, initially tailored to support Fly Dubai's layout-aware extraction needs.
+- `nextjs/src/lib/processors/utils/pdfExtractor.test.ts` - Unit tests for `pdfExtractor.ts` using Fly Dubai sample.
+- `nextjs/src/lib/processors/utils/excelExtractor.ts` - Utility for extracting data from the *standardized* Excel report files.
+- `nextjs/src/lib/processors/utils/excelExtractor.test.ts` - Unit tests for `excelExtractor.ts`.
+- `nextjs/src/lib/processors/flyDubai/FlyDubaiProcessor.ts` - Contains the specific logic for Fly Dubai PDF invoice data extraction and reconciliation, referencing `app(1).py`.
+- `nextjs/src/lib/processors/flyDubai/FlyDubaiProcessor.test.ts` - Unit tests for `FlyDubaiProcessor.ts`.
+- `nextjs/src/lib/processors/utils/reportGenerator.ts` - Utility for generating multi-sheet Excel reports; initially, the formatting logic will be specific to Fly Dubai.
+- `nextjs/src/lib/processors/utils/reportGenerator.test.ts` - Unit tests for `reportGenerator.ts` focusing on Fly Dubai report.
+- `nextjs/src/app/api/reconcile/route.ts` - API route handler for initiating reconciliation jobs (initially handling Fly Dubai).
+- `tests/integration/api/reconcile.spec.ts` - Integration tests for the reconcile API route, focusing on Fly Dubai.
+- `nextjs/src/app/api/download/[jobId]/route.ts` - API route handler for secure report downloads.
+- `tests/integration/api/download.spec.ts` - Integration tests for the download API route.
+- `nextjs/src/app/api/jobs/route.ts` - API route for fetching list of jobs and job status by ID.
+- `tests/integration/api/jobs.spec.ts` - Integration tests for the jobs API route.
+- `nextjs/src/app/app/invoice-reconciler/page.tsx` - Main UI page for the invoice reconciler.
+- `nextjs/src/components/InvoiceReconciler/JobHistory.tsx` - Component to display job history and status.
+- `tests/e2e/invoice-reconciler-flydubai.spec.ts` - End-to-end tests for the Fly Dubai reconciliation workflow.
+- `supabase/migrations/[timestamp]_update_reconciliation_jobs_table.sql` - (If needed) Migration for `reconciliation_jobs`.
 
 ### Notes
 
-- **Directory Navigation:** (Same as original)
+- **Directory Navigation:**
+  - **Next.js commands:** Run from `nextjs/` directory.
+  - **Supabase commands:** Run from `supabase/` directory.
+  - **PowerShell Syntax:** Use `cd nextjs; npm run dev`.
+- **Testing:**
+  - Unit tests alongside code files.
+  - `npx jest [path]` for unit/integration tests.
+  - `npx playwright test [path]` for E2E tests.
+  - AI agent handles technical testing before user UAT.
 - **Development Standards:**
-  - **Supabase MCP:** Use Supabase MCP for all database operations
-  - **Row Level Security:** All new tables and storage require RLS policies
-  - **TypeScript:** Full type safety with generated types
-  - **Testing:** AI agent handles all technical testing before user demonstration
-  - **Storage:** Enforce 100MB per user quota, organize by user/tool/job
-- **Supported Airlines (Initial focus Fly Dubai):** Fly Dubai, TAP, Philippines Airlines, Air India, El Al
-- **File Limits:** 25MB per file upload, PDF invoices (airline-specific), Excel reports (standardized)
-- **Testing Protocol:** AI runs automated tests, then demonstrates to user for acceptance.
+  - **Supabase MCP:** Use for database operations.
+  - **Row Level Security:** Enforce RLS.
+  - **TypeScript:** Maintain full type safety.
+  - **Focus:** This phase is SOLELY for implementing Fly Dubai. Other airlines will be added iteratively later.
+  - **PDF Library for Fly Dubai:** Choice in `pdfExtractor.ts` must support `pdfplumber`-like layout-aware extraction for Fly Dubai, as per `app(1).py`.
+  - **Storage:** 100MB/user quota. Reports: `user_id/invoice-reconciler/jobs/[job_id]/`.
+
+## Tasks
+
+- [x] **1.0 Parent Task: Establish Backend Processing Foundation (for Fly Dubai initially)**
+    - **Goal:** Create the basic building blocks and definitions that the Fly Dubai reconciliation process (and future airline processors) will use.
+    - [x] 1.1 Create/Update `nextjs/src/lib/processors/types.ts` to define shared data structures.
+        - [x] 1.1.1 Define `AwbData` interface (structure for Air Waybill information, informed by Fly Dubai's needs from `app(1).py`).
+        - [x] 1.1.2 Define `CcaData` interface (structure for Cargo Charges Correction Advice information, informed by Fly Dubai's needs from `app(1).py`).
+        - [x] 1.1.3 Define `ProcessedReportData` interface (structure for data from the *standardized* Excel report, common to all airlines).
+        - [x] 1.1.4 Define `ReconciliationInput` interface (e.g., `{ invoiceFileBuffer: Buffer, reportFileBuffer: Buffer, airlineType: 'flydubai' | 'tap' | ... }`).
+        - [x] 1.1.5 Define `ReconciliationResult` interface (e.g., `{ success: boolean; processedInvoiceData?: { awb: AwbData[], cca: CcaData[] }; processedReportData?: ProcessedReportData[]; reconciledData?: any[]; generatedReportBuffer?: Buffer; error?: string; }`).
+    - [x] 1.2 Create `nextjs/src/lib/processors/base/BaseProcessor.ts` with an abstract class `BaseProcessor`.
+        - [x] 1.2.1 Define an abstract method `process(input: ReconciliationInput): Promise<ReconciliationResult>` in `BaseProcessor`.
+
+- [x] **2.0 Parent Task: Develop File Extraction Utilities (Tailored for Fly Dubai's Initial Needs)**
+    - **Goal:** Build tools to get data out of PDF invoice files and Excel report files. The PDF extractor will be initially built and tested to serve Fly Dubai's specific requirements. The Excel extractor is for the standardized report.
+    - [x] 2.1 Implement PDF Data Extraction Utility (`nextjs/src/lib/processors/utils/pdfExtractor.ts`):
+        - [x] 2.1.1 Research and select the best Node.js PDF library (e.g., `pdfjs-dist`) to read PDFs in a way that supports the layout-aware text extraction needed for Fly Dubai (similar to `pdfplumber` in `app(1).py`). Install it.
+        - [x] 2.1.2 Create `extractTextWithLayout(pdfBuffer: Buffer): Promise<PageTextData[]>` function. This function will provide structured page content specifically consumable by the `FlyDubaiProcessor`. (Define `PageTextData` interface like `{ pageNumber: number; lines: string[] }` or a structure from the chosen library suitable for Fly Dubai's parsing).
+        - [x] 2.1.3 Test: Write unit tests for `extractTextWithLayout` using a sample Fly Dubai PDF, ensuring the output facilitates Fly Dubai's specific parsing logic.
+    - [x] 2.2 Implement Standardized Excel Report Data Extraction Utility (`nextjs/src/lib/processors/utils/excelExtractor.ts`):
+        - [x] 2.2.1 Create `extractDataFromExcel(excelBuffer: Buffer, headerRow: number, columnMappings?: Record<string, string>): Promise<ProcessedReportData[]>` function using `exceljs`. This utility is for the *standardized report format* common to all airlines.
+        - [x] 2.2.2 Ensure it correctly reads the standardized report format (header usually on 8th row) and handles data type conversions and basic cleaning.
+        - [x] 2.2.3 Test: Write unit tests for `extractDataFromExcel` using a sample standardized Excel report.
+
+- [x] **3.0 Parent Task: Implement Fly Dubai Specific PDF Invoice Data Extraction**
+    - **Goal:** Implement the logic to read and understand the unique format of *Fly Dubai PDF invoices*, using the PDF utility (from Task 2) and logic derived from `app(1).py`.
+    - [x] 3.1 Create `nextjs/src/lib/processors/flyDubai/FlyDubaiProcessor.ts` (it will extend `BaseProcessor`).
+    - [ ] 3.2 Port Fly Dubai specific RegEx patterns from `app(1).py` (for AWB and CCA data) into `FlyDubaiProcessor.ts`. These RegEx patterns are unique to Fly Dubai's invoice structure.
+    - [ ] 3.3 Implement `_extractAwbDataFromFlyDubaiPdf(pagesTextData: PageTextData[]): AwbData[]` method in `FlyDubaiProcessor.ts`.
+        - This will apply the Fly Dubai RegEx patterns to the structured text (output from `pdfExtractor.ts`) to find and structure Fly Dubai's Air Waybill data.
+        - This includes implementing Fly Dubai's specific logic for dynamic AWB page range detection, as detailed in `app(1).py`.
+    - [ ] 3.4 Implement `_extractCcaDataFromFlyDubaiPdf(pagesTextData: PageTextData[]): CcaData[]` method in `FlyDubaiProcessor.ts`.
+        - This will apply Fly Dubai RegEx patterns to find and structure Fly Dubai's Cargo Charges Correction Advice data.
+        - This includes implementing Fly Dubai's specific logic for dynamic CCA page detection, as detailed in `app(1).py`.
+    - [ ] 3.5 Test: Write unit tests for these Fly Dubai-specific extraction methods using sample data derived from a Fly Dubai PDF.
+
+- [ ] **4.0 Parent Task: Develop Fly Dubai Specific Reconciliation Logic**
+    - **Goal:** Implement the core "brain" for *Fly Dubai* that compares its extracted invoice data with the standardized Excel report data to find matches and differences, based on the logic in `app(1).py`.
+    - [ ] 4.1 Implement the main `process(input: ReconciliationInput): Promise<ReconciliationResult>` method in `FlyDubaiProcessor.ts`.
+        - [ ] 4.1.1 Call the generic `pdfExtractor.extractTextWithLayout` (Task 2.1) and then the Fly Dubai-specific `_extractAwbDataFromFlyDubaiPdf` and `_extractCcaDataFromFlyDubaiPdf` (Task 3) to get Fly Dubai invoice data.
+        - [ ] 4.1.2 Call the generic `excelExtractor.extractDataFromExcel` (Task 2.2) to get data from the standardized report.
+        - [ ] 4.1.3 Implement data cleaning and type conversion logic for Fly Dubai AWB, CCA, and the report data, precisely mirroring the specific data handling logic in `app(1).py`.
+        - [ ] 4.1.4 Implement the merge/join logic as per `app(1).py` to combine Fly Dubai AWB data with standardized report data based on AWB Prefix/Serial numbers.
+        - [ ] 4.1.5 Implement difference calculations (e.g., "Difference in Net Due amount") and discrepancy flagging based on Fly Dubai's rules as defined in `app(1).py`.
+        - [ ] 4.1.6 Prepare the final structured result, including all Fly Dubai processed data and reconciliation findings, ready for report generation.
+    - [ ] 4.2 Test: Write unit tests for the Fly Dubai data cleaning, merging, and difference calculation logic using sample Fly Dubai data, asserting against expected outcomes from `app(1).py`.
+
+- [ ] **5.0 Parent Task: Create Fly Dubai Specific Excel Reconciliation Report**
+    - **Goal:** Build the system to create the final multi-sheet Excel reconciliation report specifically formatted for *Fly Dubai*, replicating the output and formatting of `app(1).py`.
+    - [ ] 5.1 Create/Update `nextjs/src/lib/processors/utils/reportGenerator.ts`.
+    - [ ] 5.2 Define the exact sheet structure (Summary, Reconciliation, Invoices, CCA) and column layouts for *Fly Dubai reports*, based on `app(1).py`'s output.
+    - [ ] 5.3 Implement `generateFlyDubaiReport(data: { awbData: AwbData[], ccaData: CcaData[], reconciledData: any[], summaryMetrics: any }): Promise<Buffer>` function within `reportGenerator.ts`.
+        - [ ] 5.3.1 Generate "Summary" sheet with key totals and metrics relevant to Fly Dubai reconciliation, as per `app(1).py`.
+        - [ ] 5.3.2 Generate "Reconciliation" sheet showing side-by-side data and differences, as per Fly Dubai's requirements and `app(1).py`'s output.
+        - [ ] 5.3.3 Generate "Invoices" sheet with processed Fly Dubai AWB data, matching `app(1).py`.
+        - [ ] 5.3.4 Generate "CCA" sheet with processed Fly Dubai CCA data, matching `app(1).py`.
+        - [ ] 5.3.5 Apply *Fly Dubai-specific formatting* (table styles, column widths, conditional formatting for highlighting discrepancies and other details) to all sheets, precisely mimicking `app(1).py`'s `openpyxl` output.
+    - [ ] 5.4 Update `FlyDubaiProcessor.ts`'s `process` method: after successful Fly Dubai reconciliation, calculate summary metrics (as done in `app(1).py`), call `generateFlyDubaiReport`, and include the Excel file (as a buffer) in its result.
+    - [ ] 5.5 Test: Write unit tests for `generateFlyDubaiReport`. Check if the output Excel (parsed back) has correct sheets, headers, and key data matching `app(1).py`'s output.
+
+- [ ] **6.0 Parent Task: Build Backend API for Reconciliation & Job Management (for Fly Dubai)**
+    - **Goal:** Create the server-side endpoints that the website will call to start a Fly Dubai reconciliation, track its progress, and manage jobs.
+    - [ ] 6.1 Implement Main Reconciliation API Endpoint (`nextjs/src/app/api/reconcile/route.ts`):
+        - [ ] 6.1.1 Create `POST` handler to receive `airlineType` (which will be 'flydubai' for this phase), `invoiceFileId`, and `reportFileId`. Check user authentication.
+        - [ ] 6.1.2 Fetch the actual PDF invoice and Excel report files from Supabase Storage.
+        - [ ] 6.1.3 If `airlineType` is 'flydubai', instantiate `FlyDubaiProcessor`. (Add a placeholder/error for other airline types for now).
+        - [ ] 6.1.4 Call the `FlyDubaiProcessor.process` method.
+    - [ ] 6.2 Implement Job Management Logic within the Reconciliation API:
+        - [ ] 6.2.1 Before processing: Create a "job" record in the database (`reconciliation_jobs` table) with "processing" status, linking to the invoice and input report, and specifying 'flydubai' as airline type.
+        - [ ] 6.2.2 After successful processing: Upload the generated Fly Dubai Excel report (from Task 5) to Supabase Storage and update the job record with "completed" status and the report's storage path.
+        - [ ] 6.2.3 If processing fails: Update job record to "failed" and save an error message.
+        - [ ] 6.2.4 Send back the job ID to the website.
+    - [ ] 6.3 Implement API Endpoints for Job Status & History:
+        - [ ] 6.3.1 Create `GET /api/jobs/[jobId]/route.ts` for the website to ask for the status of a specific job.
+        - [ ] 6.3.2 Create `GET /api/jobs/route.ts` for the website to get a list of the user's recent reconciliation jobs.
+    - [ ] 6.4 Test: Write integration tests for these API endpoints, checking database interactions and responses, specifically for the Fly Dubai scenario.
+
+- [ ] **7.0 Parent Task: Enable Secure Report Downloads (for Fly Dubai Reports)**
+    - **Goal:** Create a secure way for users to download their completed Fly Dubai reconciliation reports from the website.
+    - [ ] 7.1 Create/Update Download API Endpoint (`nextjs/src/app/api/download/[jobId]/route.ts`):
+        - [ ] 7.1.1 Create `GET` handler that takes a `jobId`. Check user authentication and if they own the job.
+        - [ ] 7.1.2 If job is "completed", get the report's storage path from the database.
+        - [ ] 7.1.3 Generate a secure, temporary download link (signed URL) from Supabase Storage for that report.
+        - [ ] 7.1.4 Send this link to the website so it can start the download.
+    - [ ] 7.2 Test: Write integration tests for this download API, testing with a Fly Dubai job ID.
+
+- [ ] **8.0 Parent Task: Integrate Backend with Frontend for Fly Dubai Workflow**
+    - **Goal:** Connect all the backend pieces to the existing website UI, so users can perform a full Fly Dubai reconciliation from selecting the airline to downloading the report.
+    - [ ] 8.1 Update Invoice Reconciler UI (`nextjs/src/app/app/invoice-reconciler/page.tsx`) to call the `POST /api/reconcile` endpoint when the user selects "Fly Dubai" and initiates a reconciliation.
+    - [ ] 8.2 Add UI feedback for Fly Dubai job submission (e.g., "Fly Dubai reconciliation job started...").
+    - [ ] 8.3 Update Job History UI (`nextjs/src/components/InvoiceReconciler/JobHistory.tsx`) to:
+        - [ ] 8.3.1 Fetch and display job list from `GET /api/jobs`, showing airline type (Fly Dubai).
+        - [ ] 8.3.2 Regularly check/update status of "processing" Fly Dubai jobs using `GET /api/jobs/[jobId]`.
+        - [ ] 8.3.3 Show download links for "completed" Fly Dubai jobs, pointing to the download API (`GET /api/download/[jobId]`).
+        - [ ] 8.3.4 Display user-friendly error messages for "failed" Fly Dubai jobs.
+
+- [ ] **9.0 Parent Task: Conduct Comprehensive Automated Testing & UAT for Fly Dubai**
+    - **Goal:** Ensure the entire Fly Dubai reconciliation process works correctly from end-to-end and meets user requirements.
+    - [ ] 9.1 Test: Verify all unit tests (for extractors used by Fly Dubai, `FlyDubaiProcessor`, and `generateFlyDubaiReport`) pass.
+    - [ ] 9.2 Test: Verify all integration tests (for API endpoints handling the Fly Dubai scenario) pass.
+    - [ ] 9.3 Test: Create/Update End-to-End (E2E) tests using Playwright (`tests/e2e/invoice-reconciler-flydubai.spec.ts`):
+        - [ ] 9.3.1 Simulate a user logging in, navigating, selecting "Fly Dubai", uploading sample Fly Dubai invoice and report files.
+        - [ ] 9.3.2 Verify the UI shows the job processing and then completing for the Fly Dubai job.
+        - [ ] 9.3.3 Verify the download link works and a Fly Dubai report file is downloaded.
+        - [ ] 9.3.4 Test error scenarios specific to Fly Dubai processing (e.g., bad Fly Dubai PDF, incorrect report format for standard part) and check for correct UI feedback.
+    - [ ] 9.4 User Acceptance Testing (UAT): Demonstrate the full, working Fly Dubai reconciliation workflow to the user for their final approval and sign-off.

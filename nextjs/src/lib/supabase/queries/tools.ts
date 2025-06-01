@@ -1,4 +1,4 @@
-import { createSPAClient } from '@/lib/supabase/client';
+import { createSPASassClient } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 import { PostgrestSingleResponse, PostgrestResponse } from '@supabase/supabase-js';
 
@@ -128,7 +128,8 @@ const withTimeout = <T>(promise: Promise<T>, timeoutMs: number = 10000): Promise
  * Uses Supabase MCP for optimized database operations
  */
 export async function getToolsWithSubscriptions(userId: string): Promise<ToolWithSubscription[]> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     // First, get all active tools
@@ -190,7 +191,8 @@ export async function getToolWithSubscription(
   toolSlug: string, 
   userId: string
 ): Promise<ToolWithSubscription | null> {
-  const supabase = createSPAClient();
+  const sassClient = await createSPASassClient();
+  const supabase = sassClient.getSupabaseClient();
   
   try {
     // Get the tool by slug
@@ -372,7 +374,8 @@ export async function checkToolsServiceHealth(): Promise<{
   const startTime = Date.now();
   
   try {
-    const supabase = createSPAClient();
+    const sassClient = await createSPASassClient();
+    const supabase = sassClient.getSupabaseClient();
     
     // Simple query to check if service is responsive
     const { error } = await supabase.from('tools').select('id').limit(1);
