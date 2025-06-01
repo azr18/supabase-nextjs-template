@@ -1,20 +1,9 @@
 import { PDFExtract, PDFExtractOptions, PDFExtractPage, PDFExtractText } from 'pdf.js-extract';
+import { PageTextData, PageTextItem } from '../types'; // Import from types.ts
 
-export interface PageTextItem {
-  x: number;
-  y: number;
-  str: string;
-  dir: string;
-  width: number;
-  height: number;
-  fontName: string;
-}
-
-export interface PageTextData {
-  pageNumber: number;
-  lines: string[];
-  items: PageTextItem[]; // Raw items from pdf.js-extract for this page
-}
+// Remove local definitions of PageTextItem and PageTextData
+// interface PageTextItem { ... }
+// interface PageTextData { ... }
 
 // Heuristic to group text items into lines based on Y-coordinate
 // This is a simplified approach. pdfplumber's layout=True is more sophisticated.

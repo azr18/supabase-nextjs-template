@@ -20,6 +20,22 @@ export interface AwbData {
   exchangeRate: string;
 }
 
+export interface PageTextItem {
+  x: number;
+  y: number;
+  str: string;
+  dir: string;
+  width: number;
+  height: number;
+  fontName: string;
+}
+
+export interface PageTextData {
+  pageNumber: number;
+  lines: string[];
+  items?: PageTextItem[];
+}
+
 export interface CcaData {
   ccaRefNo: string;
   awbPrefix: string;
