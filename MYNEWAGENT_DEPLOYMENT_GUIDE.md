@@ -31,7 +31,7 @@
 4. **Expiration:** 90 days
 5. **Check:** `repo` (Full control of private repositories)
 6. **Generate & Copy** the token (starts with `ghp_`)
-
+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
 **Save this token - you'll need it in Step 2!**
 
 ### 1.2 Get Supabase Service Key
