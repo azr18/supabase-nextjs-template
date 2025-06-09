@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
         try {
             const supabase = await createSPASassClient();
             const { error } = await supabase.getSupabaseClient().auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/auth/reset-password`,
+                redirectTo: `http://localhost/auth/reset-password`,
             });
 
             if (error) throw error;

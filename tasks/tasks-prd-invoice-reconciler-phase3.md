@@ -116,24 +116,24 @@
         - [x] 6.3.2 Create `GET /api/jobs/route.ts` for the website to get a list of the user's recent reconciliation jobs.
     - [x] 6.4 Test: Write integration tests for these API endpoints, checking database interactions and responses, specifically for the Fly Dubai scenario.
 
-- [ ] **7.0 Parent Task: Enable Secure Report Downloads (for Fly Dubai Reports)**
+- [x] **7.0 Parent Task: Enable Secure Report Downloads (for Fly Dubai Reports)**
     - **Goal:** Create a secure way for users to download their completed Fly Dubai reconciliation reports from the website.
-    - [ ] 7.1 Create/Update Download API Endpoint (`nextjs/src/app/api/download/[jobId]/route.ts`):
-        - [ ] 7.1.1 Create `GET` handler that takes a `jobId`. Check user authentication and if they own the job.
-        - [ ] 7.1.2 If job is "completed", get the report's storage path from the database.
-        - [ ] 7.1.3 Generate a secure, temporary download link (signed URL) from Supabase Storage for that report.
-        - [ ] 7.1.4 Send this link to the website so it can start the download.
-    - [ ] 7.2 Test: Write integration tests for this download API, testing with a Fly Dubai job ID.
+    - [x] 7.1 Create/Update Download API Endpoint (`nextjs/src/app/api/download/[jobId]/route.ts`):
+        - [x] 7.1.1 Create `GET` handler that takes a `jobId`. Check user authentication and if they own the job.
+        - [x] 7.1.2 If job is "completed", get the report's storage path from the database.
+        - [x] 7.1.3 Generate a secure, temporary download link (signed URL) from Supabase Storage for that report.
+        - [x] 7.1.4 Send this link to the website so it can start the download.
+    - [x] 7.2 Test: Write integration tests for this download API, testing with a Fly Dubai job ID.
 
-- [ ] **8.0 Parent Task: Integrate Backend with Frontend for Fly Dubai Workflow**
+- [x] **8.0 Parent Task: Integrate Backend with Frontend for Fly Dubai Workflow**
     - **Goal:** Connect all the backend pieces to the existing website UI, so users can perform a full Fly Dubai reconciliation from selecting the airline to downloading the report.
-    - [ ] 8.1 Update Invoice Reconciler UI (`nextjs/src/app/app/invoice-reconciler/page.tsx`) to call the `POST /api/reconcile` endpoint when the user selects "Fly Dubai" and initiates a reconciliation.
-    - [ ] 8.2 Add UI feedback for Fly Dubai job submission (e.g., "Fly Dubai reconciliation job started...").
-    - [ ] 8.3 Update Job History UI (`nextjs/src/components/InvoiceReconciler/JobHistory.tsx`) to:
-        - [ ] 8.3.1 Fetch and display job list from `GET /api/jobs`, showing airline type (Fly Dubai).
-        - [ ] 8.3.2 Regularly check/update status of "processing" Fly Dubai jobs using `GET /api/jobs/[jobId]`.
-        - [ ] 8.3.3 Show download links for "completed" Fly Dubai jobs, pointing to the download API (`GET /api/download/[jobId]`).
-        - [ ] 8.3.4 Display user-friendly error messages for "failed" Fly Dubai jobs.
+    - [x] 8.1 Update Invoice Reconciler UI (`nextjs/src/app/app/invoice-reconciler/page.tsx`) to call the `POST /api/reconcile` endpoint when the user selects "Fly Dubai" and initiates a reconciliation.
+    - [x] 8.2 Add UI feedback for Fly Dubai job submission (e.g., "Fly Dubai reconciliation job started...").
+    - [x] 8.3 Update Job History UI (`nextjs/src/components/InvoiceReconciler/JobHistory.tsx`) to:
+        - [x] 8.3.1 Fetch and display job list from `GET /api/jobs`, showing airline type (Fly Dubai).
+        - [x] 8.3.2 Regularly check/update status of "processing" Fly Dubai jobs using `GET /api/jobs/[jobId]`.
+        - [x] 8.3.3 Show download links for "completed" Fly Dubai jobs, pointing to the download API (`GET /api/download/[jobId]`).
+        - [x] 8.3.4 Display user-friendly error messages for "failed" Fly Dubai jobs.
 
 - [ ] **9.0 Parent Task: Conduct Comprehensive Automated Testing & UAT for Fly Dubai**
     - **Goal:** Ensure the entire Fly Dubai reconciliation process works correctly from end-to-end and meets user requirements.

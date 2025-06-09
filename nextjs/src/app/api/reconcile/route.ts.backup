@@ -1,0 +1,134 @@
+import { createClient } from '../../../lib/supabase/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+// Step 2: Import PDF extractor for testing
+import { extractTextWithLayout } from '../../../lib/processors/utils/pdfExtractor';
+// Temporarily commented out full processor imports
+// import { FlyDubaiProcessor } from '../../../lib/processors/flyDubai/FlyDubaiProcessor';
+// import type { ReconciliationInput } from '../../../lib/processors/types';
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('🔍 Step 1: Testing file retrieval from Supabase');
+    
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { airlineType, invoiceFileId, reportFileId } = await request.json();
+
+    if (!airlineType || !invoiceFileId || !reportFileId) {
+      return NextResponse.json(
+        { error: 'Missing required parameters' },
+        { status: 400 }
+      );
+    }
+
+    if (airlineType !== 'flydubai') {
+      return NextResponse.json(
+        { error: 'Invalid airlineType. Currently, only "flydubai" is supported.' },
+        { status: 400 }
+      );
+    }
+
+    console.log('📁 Attempting to retrieve files:', { 
+      invoiceFileId, 
+      reportFileId, 
+      userId: user.id 
+    });
+
+    // Step 1: Test file retrieval
+    const { data: invoiceFile, error: invoiceError } = await supabase.storage
+      .from('invoices')
+      .download(invoiceFileId);
+
+    if (invoiceError) {
+      console.error('❌ Invoice file retrieval error:', invoiceError);
+      return NextResponse.json({ 
+        error: 'Failed to retrieve invoice file',
+        details: invoiceError.message,
+        step: 'file_retrieval_invoice'
+      }, { status: 500 });
+    }
+
+    const { data: reportFile, error: reportError } = await supabase.storage
+      .from('reports')
+      .download(reportFileId);
+
+    if (reportError) {
+      console.error('❌ Report file retrieval error:', reportError);
+      return NextResponse.json({ 
+        error: 'Failed to retrieve report file',
+        details: reportError.message,
+        step: 'file_retrieval_report'
+      }, { status: 500 });
+    }
+
+    // Convert to buffers
+    const invoiceBuffer = Buffer.from(await invoiceFile.arrayBuffer());
+    const reportBuffer = Buffer.from(await reportFile.arrayBuffer());
+
+    console.log('✅ Step 1 PASSED: Files successfully retrieved:', {
+      invoiceSize: invoiceBuffer.length,
+      reportSize: reportBuffer.length
+    });
+
+    // Step 2: Test PDF data extraction from uploaded invoice files
+    console.log('🔍 Step 2: Testing PDF data extraction from invoice file');
+    
+    try {
+      const extractedData = await extractTextWithLayout(invoiceBuffer);
+      
+      if (!extractedData || extractedData.length === 0) {
+        return NextResponse.json({ 
+          error: 'PDF extraction returned no data',
+          step: 'pdf_extraction',
+          details: 'The extracted data array is empty or null'
+        }, { status: 500 });
+      }
+
+      console.log('✅ Step 2 PASSED: PDF data extracted successfully:', {
+        totalPages: extractedData.length,
+        pagesWithData: extractedData.filter(page => page.lines.length > 0).length,
+        sampleLines: extractedData[0]?.lines?.slice(0, 3) || []
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Step 2 PASSED: PDF data extraction successful',
+        step: 'pdf_extraction',
+        details: {
+          // Step 1 results
+          invoiceFileSize: invoiceBuffer.length,
+          reportFileSize: reportBuffer.length,
+          // Step 2 results
+          totalPages: extractedData.length,
+          pagesWithData: extractedData.filter(page => page.lines.length > 0).length,
+          firstPageLineCount: extractedData[0]?.lines?.length || 0,
+          sampleTextLines: extractedData[0]?.lines?.slice(0, 5) || [],
+          airlineType,
+          userId: user.id
+        }
+      }, { status: 200 });
+
+    } catch (pdfError) {
+      console.error('❌ Step 2 FAILED: PDF extraction error:', pdfError);
+      return NextResponse.json({ 
+        error: 'Failed to extract data from PDF',
+        step: 'pdf_extraction',
+        details: pdfError instanceof Error ? pdfError.message : 'Unknown PDF extraction error'
+      }, { status: 500 });
+    }
+
+  } catch (e) {
+    console.error('💥 Unexpected error in Step 1-2:', e);
+    return NextResponse.json({ 
+      error: 'An unexpected error occurred.',
+      step: 'file_retrieval_or_pdf_extraction',
+      details: e instanceof Error ? e.message : 'Unknown error'
+    }, { status: 500 });
+  }
+} 

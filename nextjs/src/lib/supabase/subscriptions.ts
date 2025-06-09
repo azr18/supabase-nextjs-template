@@ -1,5 +1,5 @@
 import { createSPAClient } from './client'
-import { createSSRClient } from './server'
+import { createClient } from './server'
 import { Database, UserToolSubscription } from './types'
 import { SupabaseClient } from '@supabase/supabase-js'
 
@@ -49,7 +49,7 @@ export class SubscriptionManager {
    * Create instance for server-side operations
    */
   static async createServerInstance(): Promise<SubscriptionManager> {
-    const serverClient = await createSSRClient()
+    const serverClient = await createClient()
     return new SubscriptionManager(serverClient)
   }
 

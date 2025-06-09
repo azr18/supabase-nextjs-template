@@ -1,10 +1,9 @@
-import { AwbData, CcaData, PageTextData, ReconciliationInput, ReconciliationResult, ProcessedReportData } from '../types';
+import { AwbData, CcaData, PageTextData, ReconciliationInput, ReconciliationResult, ProcessedReportData, ReconciledDataEntry, SummaryMetrics } from '../types';
 import { BaseProcessor } from '../base/BaseProcessor';
-import { extractTextWithLayout } from '@/lib/processors/utils/pdfExtractor';
-import { extractDataFromExcel } from '@/lib/processors/utils/excelExtractor';
-import { safeToNumeric, formatFlyDubaiDateString } from '@/lib/processors/utils/dataCleaning';
-import { generateFlyDubaiReport } from '@/lib/processors/utils/reportGenerator';
-import { Buffer } from 'buffer'; // Added import for Node.js Buffer
+import { extractTextWithLayout } from '../utils/pdfExtractor';
+import { extractDataFromExcel } from '../utils/excelExtractor';
+import { safeToNumeric, formatFlyDubaiDateString } from '../utils/dataCleaning';
+import { generateFlyDubaiReport } from '../utils/reportGenerator';
 
 export class FlyDubaiProcessor extends BaseProcessor {
   // Regex definitions ported from app(1).py
@@ -268,7 +267,11 @@ export class FlyDubaiProcessor extends BaseProcessor {
     }
 
     // Process using matchAll on the raw text block - this would be used for real PDFs
-    const matches = [...ccaPageText.matchAll(FlyDubaiProcessor.CCA_BLOCK_REGEX)];
+    const matches: RegExpExecArray[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = FlyDubaiProcessor.CCA_BLOCK_REGEX.exec(ccaPageText)) !== null) {
+      matches.push(match);
+    }
 
     for (const groups of matches) {
       if (groups && groups.length === 17) { // groups[0] is the full match, then 16 capture groups
@@ -308,19 +311,19 @@ export class FlyDubaiProcessor extends BaseProcessor {
       const cleanedAwbData: AwbData[] = awbDataRaw.map(awb => ({
         ...awb,
         flightDate: formatFlyDubaiDateString(awb.flightDate),
-        chargeWeight: (awb.chargeWeight || '').replace(/\\s*K$/i, '').trim(), // Remove K and trim
-        // Convert numeric fields
-        netYieldRate: String(safeToNumeric(awb.netYieldRate)),
-        ppFreightCharge: String(safeToNumeric(awb.ppFreightCharge)),
-        ppDueAirline: String(safeToNumeric(awb.ppDueAirline)),
-        ccFreightCharge: String(safeToNumeric(awb.ccFreightCharge)),
-        ccDueAgent: String(safeToNumeric(awb.ccDueAgent)),
-        ccDueAirline: String(safeToNumeric(awb.ccDueAirline)),
-        disc: String(safeToNumeric(awb.disc)),
-        agencyComm: String(safeToNumeric(awb.agencyComm)),
-        taxes: String(safeToNumeric(awb.taxes)),
-        others: String(safeToNumeric(awb.others)),
-        netDueForAwb: String(safeToNumeric(awb.netDueForAwb)),
+        chargeWeight: this._removeTrailingZeros((awb.chargeWeight || '').replace(/\s*K$/i, '').trim()), // Remove K and trailing zeros
+        // Convert numeric fields and remove trailing zeros
+        netYieldRate: this._removeTrailingZeros(String(safeToNumeric(awb.netYieldRate) || 0)),
+        ppFreightCharge: String(safeToNumeric(awb.ppFreightCharge) || 0),
+        ppDueAirline: String(safeToNumeric(awb.ppDueAirline) || 0),
+        ccFreightCharge: String(safeToNumeric(awb.ccFreightCharge) || 0),
+        ccDueAgent: String(safeToNumeric(awb.ccDueAgent) || 0),
+        ccDueAirline: String(safeToNumeric(awb.ccDueAirline) || 0),
+        disc: String(safeToNumeric(awb.disc) || 0),
+        agencyComm: String(safeToNumeric(awb.agencyComm) || 0),
+        taxes: String(safeToNumeric(awb.taxes) || 0),
+        others: String(safeToNumeric(awb.others) || 0),
+        netDueForAwb: this._removeTrailingZeros(String(safeToNumeric(awb.netDueForAwb) || 0)),
       }));
 
       const cleanedCcaData: CcaData[] = ccaDataRaw.map(cca => ({
@@ -344,9 +347,9 @@ export class FlyDubaiProcessor extends BaseProcessor {
           newRow[key.toLowerCase().trim()] = row[key];
         }
         // Ensure numeric types for comparison columns
-        newRow['chargewt'] = safeToNumeric(newRow['chargewt']);
-        newRow['frt_cost_rate'] = safeToNumeric(newRow['frt_cost_rate']);
-        newRow['total_cost'] = safeToNumeric(newRow['total_cost']);
+        newRow['chargewt'] = safeToNumeric(newRow['chargewt']) || undefined;
+        newRow['frt_cost_rate'] = safeToNumeric(newRow['frt_cost_rate']) || undefined;
+        newRow['total_cost'] = safeToNumeric(newRow['total_cost']) || undefined;
         newRow['awbprefix'] = String(newRow['awbprefix'] || '').replace(/\\.0$/, '').trim();
         newRow['awbsuffix'] = String(newRow['awbsuffix'] || '').replace(/\\.0$/, '').trim();
         return newRow;
@@ -354,27 +357,55 @@ export class FlyDubaiProcessor extends BaseProcessor {
 
 
       // --- Reconciliation Logic (Merge/Join) ---
-      const reconciledData: any[] = [];
+      const reconciledData: ReconciledDataEntry[] = [];
       const awbMap = new Map<string, AwbData>();
+      
+      // Create map with all possible key formats for each AWB
       cleanedAwbData.forEach(awb => {
-        const key = `${awb.awbSerialPart1}-${awb.awbSerialPart2}`; // Using parts for key
-        awbMap.set(key, awb);
+        const concatenatedSerial = `${awb.awbSerialPart1}${awb.awbSerialPart2}`;
+        const key1 = `${awb.awbSerialPart1}-${awb.awbSerialPart2}`; // Parts format
+        const key2 = `141-${concatenatedSerial}`; // Prefixed concatenated format
+        
+        awbMap.set(key1, awb);
+        awbMap.set(key2, awb);
       });
 
+      // Process report data and reconcile
+      const processedAwbKeys = new Set<string>(); // Track processed AWBs to prevent duplicates
+      
       cleanedReportData.forEach(reportRow => {
         const reportAwbKey = `${reportRow.awbprefix}-${reportRow.awbsuffix}`;
-        const invoiceAwb = awbMap.get(reportAwbKey);
+        let invoiceAwb = awbMap.get(reportAwbKey);
+        let awbId = '';
+        
+        // If not found, try alternate format
+        if (!invoiceAwb) {
+          const suffix = String(reportRow.awbsuffix);
+          if (suffix.length === 8) {
+            const part1 = suffix.substring(0, 7);
+            const part2 = suffix.substring(7);
+            const alternateKey = `${part1}-${part2}`;
+            invoiceAwb = awbMap.get(alternateKey);
+            if (invoiceAwb) {
+              awbId = `${part1}${part2}`;
+            }
+          }
+        } else {
+          awbId = String(reportRow.awbsuffix);
+        }
 
-        if (invoiceAwb) {
-          const netDueInvoice = safeToNumeric(invoiceAwb.netDueForAwb);
-          const netDueReport = safeToNumeric(reportRow.total_cost);
+        if (invoiceAwb && !processedAwbKeys.has(awbId)) {
+          processedAwbKeys.add(awbId); // Mark this AWB as processed
+          
+          const netDueInvoice = safeToNumeric(invoiceAwb.netDueForAwb) || undefined;
+          const netDueReport = safeToNumeric(reportRow.total_cost) || undefined;
           const diffNetDue = typeof netDueReport === 'number' && typeof netDueInvoice === 'number' ? netDueReport - netDueInvoice : undefined;
 
-          const chargeWeightInvoice = safeToNumeric(invoiceAwb.chargeWeight);
-          const chargeWeightReport = safeToNumeric(reportRow.chargewt);
+          const chargeWeightInvoice = safeToNumeric(invoiceAwb.chargeWeight) || undefined;
+          const chargeWeightReport = safeToNumeric(reportRow.chargewt) || undefined;
           
-          const netYieldRateInvoice = safeToNumeric(invoiceAwb.netYieldRate);
-          const netYieldRateReport = safeToNumeric(reportRow.frt_cost_rate);
+          const netYieldRateInvoice = safeToNumeric(invoiceAwb.netYieldRate) || undefined;
+          const netYieldRateReport = safeToNumeric(reportRow.frt_cost_rate) || undefined;
 
           let discrepancyFound = false;
           if (diffNetDue !== undefined && Math.abs(diffNetDue) > 0.001) discrepancyFound = true;
@@ -385,8 +416,18 @@ export class FlyDubaiProcessor extends BaseProcessor {
           if ((isNaN(chargeWeightInvoice as number) && !isNaN(chargeWeightReport as number)) || (!isNaN(chargeWeightInvoice as number) && isNaN(chargeWeightReport as number))) discrepancyFound = true;
           if ((isNaN(netYieldRateInvoice as number) && !isNaN(netYieldRateReport as number)) || (!isNaN(netYieldRateInvoice as number) && isNaN(netYieldRateReport as number))) discrepancyFound = true;
 
-
           reconciledData.push({
+            'AWB Prefix': '141', // FlyDubai prefix is always 141
+            'AWB Serial': `${invoiceAwb.awbSerialPart1}${invoiceAwb.awbSerialPart2}`, // Concatenated serial
+            'Charge Weight (Invoice)': chargeWeightInvoice,
+            'Charge Weight (Report)': chargeWeightReport,
+            'Net Yield Rate (Invoice)': netYieldRateInvoice,
+            'Net Yield Rate (Report)': netYieldRateReport,
+            'Net Due (Invoice)': netDueInvoice,
+            'Net Due (Report)': netDueReport,
+            'Diff Net Due': diffNetDue,
+            'Discrepancy Found': discrepancyFound,
+            // Keep the old field names for backward compatibility
             awbPrefix: invoiceAwb.awbSerialPart1,
             awbSerial: invoiceAwb.awbSerialPart2,
             chargeWeightInvoice: chargeWeightInvoice,
@@ -398,31 +439,45 @@ export class FlyDubaiProcessor extends BaseProcessor {
             diffNetDue: diffNetDue,
             discrepancyFound: discrepancyFound,
           });
-          awbMap.delete(reportAwbKey); // Remove matched AWB
         }
       });
 
       // Add remaining AWBs from invoice (not found in report)
-      awbMap.forEach(invoiceAwb => {
-        const netDueInvoice = safeToNumeric(invoiceAwb.netDueForAwb);
-        const chargeWeightInvoice = safeToNumeric(invoiceAwb.chargeWeight);
-        const netYieldRateInvoice = safeToNumeric(invoiceAwb.netYieldRate);
-        reconciledData.push({
-          awbPrefix: invoiceAwb.awbSerialPart1,
-          awbSerial: invoiceAwb.awbSerialPart2,
-          chargeWeightInvoice: chargeWeightInvoice,
-          chargeWeightReport: undefined, // Or some placeholder like 'N/A'
-          netYieldRateInvoice: netYieldRateInvoice,
-          netYieldRateReport: undefined,
-          netDueInvoice: netDueInvoice,
-          netDueReport: undefined,
-          diffNetDue: undefined, // Or -netDueInvoice if that's desired
-          discrepancyFound: true, // Not found in report is a discrepancy
-        });
+      cleanedAwbData.forEach(invoiceAwb => {
+        const awbId = `${invoiceAwb.awbSerialPart1}${invoiceAwb.awbSerialPart2}`;
+        if (!processedAwbKeys.has(awbId)) {
+          const netDueInvoice = safeToNumeric(invoiceAwb.netDueForAwb) || undefined;
+          const chargeWeightInvoice = safeToNumeric(invoiceAwb.chargeWeight) || undefined;
+          const netYieldRateInvoice = safeToNumeric(invoiceAwb.netYieldRate) || undefined;
+          
+          reconciledData.push({
+            'AWB Prefix': '141', // FlyDubai prefix is always 141
+            'AWB Serial': `${invoiceAwb.awbSerialPart1}${invoiceAwb.awbSerialPart2}`, // Concatenated serial
+            'Charge Weight (Invoice)': chargeWeightInvoice,
+            'Charge Weight (Report)': undefined,
+            'Net Yield Rate (Invoice)': netYieldRateInvoice,
+            'Net Yield Rate (Report)': undefined,
+            'Net Due (Invoice)': netDueInvoice,
+            'Net Due (Report)': null,
+            'Diff Net Due': null,
+            'Discrepancy Found': true, // Not found in report is a discrepancy
+            // Keep the old field names for backward compatibility
+            awbPrefix: invoiceAwb.awbSerialPart1,
+            awbSerial: invoiceAwb.awbSerialPart2,
+            chargeWeightInvoice: chargeWeightInvoice,
+            chargeWeightReport: undefined,
+            netYieldRateInvoice: netYieldRateInvoice,
+            netYieldRateReport: undefined,
+            netDueInvoice: netDueInvoice,
+            netDueReport: undefined,
+            diffNetDue: undefined,
+            discrepancyFound: true,
+          });
+        }
       });
       
       // --- Summary Metrics Calculation (as per app(1).py logic) ---
-      const summaryMetrics: any = {};
+      const summaryMetrics: SummaryMetrics = {};
       const awbDataForSummary = cleanedAwbData.filter(awb => awb.awbNumber !== 'Total'); // Exclude total row if any
 
       summaryMetrics['Invoice AWB Count'] = awbDataForSummary.length;
@@ -451,26 +506,34 @@ export class FlyDubaiProcessor extends BaseProcessor {
         summaryMetrics: summaryMetrics,
       });
 
-      // Convert ExcelJS.Buffer (Uint8Array) to Node.js Buffer
-      const reportNodeBuffer = Buffer.from(reportBufferExcelJS);
-
       return {
         success: true,
         processedInvoiceData: {
           awb: cleanedAwbData,
           cca: cleanedCcaData,
         },
-        processedReportData: cleanedReportData, // Return cleaned report data
+        processedReportData: cleanedReportData,
         reconciledData: reconciledData,
-        generatedReportBuffer: reportNodeBuffer, // Include the Node.js Buffer
+        generatedReportBuffer: Buffer.from(reportBufferExcelJS),
       };
-
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during Fly Dubai processing.";
       console.error("Error in FlyDubaiProcessor:", error);
       return {
         success: false,
-        error: error.message || "An unknown error occurred during Fly Dubai processing.",
+        error: errorMessage,
       };
     }
+  }
+
+  // Helper method to remove trailing zeros from numeric strings
+  private _removeTrailingZeros(value: string): string {
+    if (!value || typeof value !== 'string') return value;
+    
+    // If it's a numeric string, remove trailing zeros after decimal point
+    if (/^\d+\.\d+$/.test(value)) {
+      return value.replace(/\.?0+$/, '');
+    }
+    return value;
   }
 }

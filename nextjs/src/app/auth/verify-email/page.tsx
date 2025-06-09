@@ -2,11 +2,11 @@
 
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import {useState} from "react";
+import {useState, Suspense} from "react";
 import {createSPASassClient} from "@/lib/supabase/client";
 import { useSearchParams } from 'next/navigation';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -39,7 +39,7 @@ export default function VerifyEmailPage() {
         }
     }
 
-    const searchParams = useSearchParams();
+
 
     return (
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
@@ -103,5 +103,13 @@ export default function VerifyEmailPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+            <VerifyEmailContent />
+        </Suspense>
     );
 }

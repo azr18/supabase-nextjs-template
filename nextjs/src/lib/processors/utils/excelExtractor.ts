@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs';
 import { ProcessedReportData } from '../types';
 
 /**
@@ -81,20 +81,32 @@ export async function extractDataFromExcel(
             // ExcelJS might return objects for dates, formulas, rich text, etc.
             // We are interested in the result of the cell's calculation or its simple value.
             if (cell.value !== null && cell.value !== undefined) {
-                if (typeof cell.value === 'object' && 'result' in cell.value && cell.value.result !== undefined) {
+                let cellValue: string | number | undefined = undefined;
+                
+                if (typeof cell.value === 'string' || typeof cell.value === 'number') {
+                    // Simple string or number values
+                    cellValue = cell.value;
+                } else if (typeof cell.value === 'object' && cell.value && 'result' in cell.value && cell.value.result !== undefined) {
                     // This handles formula results primarily
-                    rowData[finalHeaderName] = cell.value.result;
-                } else if (typeof cell.value === 'object' && 'text' in cell.value && typeof cell.value.text === 'string' ) {
+                    const result = cell.value.result;
+                    if (typeof result === 'string' || typeof result === 'number') {
+                        cellValue = result;
+                    } else {
+                        cellValue = String(result);
+                    }
+                } else if (typeof cell.value === 'object' && cell.value && 'text' in cell.value && typeof cell.value.text === 'string') {
                     // This handles rich text by taking the plain text version
-                    rowData[finalHeaderName] = cell.value.text;
+                    cellValue = cell.value.text;
                 } else if (cell.value instanceof Date) {
-                    rowData[finalHeaderName] = cell.value.toISOString();
+                    cellValue = cell.value.toISOString();
+                } else {
+                    // For any other type, convert to string
+                    cellValue = String(cell.value);
                 }
-                 else {
-                    rowData[finalHeaderName] = cell.value;
-                }
+                
+                rowData[finalHeaderName] = cellValue;
             } else {
-                 rowData[finalHeaderName] = null; // Or undefined, depending on desired output for empty cells
+                rowData[finalHeaderName] = undefined;
             }
           }
           if (cell.value !== null && cell.value !== undefined) {

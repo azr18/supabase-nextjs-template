@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs';
 import { AwbData, CcaData } from '../types'; // Assuming types are defined
 
 // TODO: Define a more specific type for reconciledData and summaryMetrics if possible
@@ -116,7 +116,7 @@ export async function generateFlyDubaiReport(data: FlyDubaiReportData): Promise<
 
   summarySheet.columns = summaryHeaders.map(header => ({
     header: header,
-    key: header.toLowerCase().replace(/\\s+/g, ''), // Create a key from the header
+    key: header.toLowerCase().replace(/\s+/g, ''), // Create a key from the header
     width: header === 'Metric' ? 40 : 20, // Initial widths
   }));
 

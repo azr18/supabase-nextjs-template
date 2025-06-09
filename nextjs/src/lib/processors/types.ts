@@ -56,7 +56,7 @@ export interface CcaData {
 }
 
 export interface ProcessedReportData {
-  [key: string]: any; // Allows for flexible column names from the Excel report
+  [key: string]: string | number | undefined; // Allows for flexible column names from the Excel report
 }
 
 export type AirlineType = 'flydubai' | 'tap' | 'philippines' | 'airindia' | 'elal';
@@ -74,7 +74,35 @@ export interface ReconciliationResult {
     cca: CcaData[];
   };
   processedReportData?: ProcessedReportData[];
-  reconciledData?: any[]; // Will be more specific once reconciliation logic is defined
+  reconciledData?: ReconciledDataEntry[];
   generatedReportBuffer?: Buffer;
   error?: string;
+}
+
+export interface ReconciledDataEntry {
+  'AWB Prefix': string;
+  'AWB Serial': string;
+  'Charge Weight (Invoice)': number | undefined;
+  'Charge Weight (Report)': number | undefined;
+  'Net Yield Rate (Invoice)': number | undefined;
+  'Net Yield Rate (Report)': number | undefined;
+  'Net Due (Invoice)': number | undefined;
+  'Net Due (Report)': number | null | undefined;
+  'Diff Net Due': number | null | undefined;
+  'Discrepancy Found': boolean;
+  // Legacy field names for backward compatibility
+  awbPrefix: string;
+  awbSerial: string;
+  chargeWeightInvoice: number | undefined;
+  chargeWeightReport: number | undefined;
+  netYieldRateInvoice: number | undefined;
+  netYieldRateReport: number | undefined;
+  netDueInvoice: number | undefined;
+  netDueReport: number | undefined;
+  diffNetDue: number | undefined;
+  discrepancyFound: boolean;
+}
+
+export interface SummaryMetrics {
+  [key: string]: number;
 } 

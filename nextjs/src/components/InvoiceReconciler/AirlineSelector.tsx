@@ -18,7 +18,7 @@ export interface AirlineOption {
 // Supported airlines as defined in PRD
 const AIRLINES: AirlineOption[] = [
   {
-    id: 'fly_dubai',
+    id: 'flydubai',
     name: 'Fly Dubai',
     code: 'FZ',
     description: 'Dubai-based low-cost carrier',

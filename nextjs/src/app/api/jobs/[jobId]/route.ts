@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
-  const { jobId } = params;
+  const { jobId } = await params;
   const supabase = createRouteHandlerClient({ cookies });
 
   try {
@@ -44,8 +44,9 @@ export async function GET(
     }
 
     return NextResponse.json(job, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Catch all error in GET /api/jobs/[jobId]:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: 'Internal Server Error', details: errorMessage }, { status: 500 });
   }
 } 

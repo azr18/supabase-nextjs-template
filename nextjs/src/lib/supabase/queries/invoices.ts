@@ -1,5 +1,8 @@
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { createSPAClient } from '@/lib/supabase/client';
 import { Database, UserInvoicesByAirlineResult, SavedInvoice } from '@/lib/supabase/types';
+import { JobWithToolInfo } from './jobs';
+
+type ReconciliationJob = Database['public']['Tables']['reconciliation_jobs']['Row'];
 
 // Enhanced error types for better error handling
 export enum InvoicesQueryError {
@@ -112,7 +115,7 @@ const handleQueryError = (error: any, operation: string): never => {
 export async function getUserInvoicesByAirline(
   airlineType?: string
 ): Promise<UserInvoicesByAirlineResult[]> {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = createSPAClient();
   
   try {
     const { data, error } = await supabase.rpc('get_user_invoices_by_airline', {
@@ -144,7 +147,7 @@ export async function getAllUserInvoices(): Promise<UserInvoicesByAirlineResult[
  * Get a specific saved invoice by ID (with ownership validation via RLS)
  */
 export async function getSavedInvoiceById(invoiceId: string): Promise<SavedInvoice | null> {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = createSPAClient();
   
   try {
     const { data: invoice, error } = await supabase
@@ -176,7 +179,7 @@ export async function getSavedInvoiceById(invoiceId: string): Promise<SavedInvoi
  * Get invoices count by airline type for the current user
  */
 export async function getInvoicesCountByAirline(): Promise<Record<string, number>> {
-  const supabase = createSupabaseBrowserClient();
+  const supabase = createSPAClient();
   
   try {
     const { data, error } = await supabase
@@ -346,4 +349,51 @@ export async function retryInvoicesQuery<T>(
   }
   
   throw lastError;
+}
+
+export async function getRecentJobsWithUploads(
+  userId: string
+): Promise<JobWithToolInfo[]> {
+  const supabase = createSPAClient();
+  const { data: jobs, error } = await supabase
+    .from('reconciliation_jobs')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching recent jobs with uploads:', error);
+    return [];
+  }
+  return jobs as JobWithToolInfo[];
+}
+
+export async function getJobWithUploadsAndResults(
+  jobId: string
+): Promise<JobWithToolInfo | null> {
+  const supabase = createSPAClient();
+  const { data, error } = await supabase
+    .from('reconciliation_jobs')
+    .select('*')
+    .eq('id', jobId)
+    .single();
+
+  if (error) {
+    console.error(`Error fetching job ${jobId} with uploads and results:`, error);
+    return null;
+  }
+  return data as JobWithToolInfo;
+}
+
+export async function getJobsForUser(userId: string): Promise<ReconciliationJob[]> {
+  const supabase = createSPAClient();
+  const { data, error } = await supabase
+    .from('reconciliation_jobs')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching jobs for user:', error);
+    return [];
+  }
+  return data as ReconciliationJob[];
 } 

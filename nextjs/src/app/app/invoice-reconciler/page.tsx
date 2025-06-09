@@ -5,7 +5,7 @@ import { useGlobal } from '@/lib/context/GlobalContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, RefreshCw, FileText, Upload, History, Lock, CheckCircle, Info, ArrowRight, ArrowLeft, Plane, Clock, Star, Loader2, Shield, AlertTriangle, ExternalLink } from 'lucide-react';
+import { AlertCircle, RefreshCw, FileText, Upload, Lock, CheckCircle, Info, ArrowRight, ArrowLeft, Plane, Clock, Loader2, Shield, AlertTriangle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/useToast';
@@ -13,7 +13,7 @@ import { hasToolAccess, getToolSubscriptionStatus } from '@/lib/supabase/queries
 import AirlineSelector, { AIRLINES } from '@/components/InvoiceReconciler/AirlineSelector';
 import InvoiceManager from '@/components/InvoiceReconciler/InvoiceManager';
 import FileUpload from '@/components/InvoiceReconciler/FileUpload';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { createSPAClient } from '@/lib/supabase/client';
 import type { SavedInvoice } from '@/lib/supabase/types';
 
 // Tool slug for subscription validation
@@ -48,12 +48,18 @@ interface WorkflowState {
   selectedInvoiceId: string | null;
   // New file upload state
   selectedFile: File | null;
+  // Report file state
+  reportFile: File | null;
+  reportFileId: string | null; // For uploaded report file path
   isValidSelection: boolean;
   canProceed: boolean;
   validationError: string | null;
   // Loading states for airline selection operations
   isLoadingAirlines: boolean;
   isProcessingSelection: boolean;
+  // Processing state
+  isProcessingReconciliation: boolean;
+  currentJobId: string | null;
 }
 
 export default function InvoiceReconcilerPage() {
@@ -64,7 +70,7 @@ export default function InvoiceReconcilerPage() {
   const supabaseClient = useMemo(() => {
     if (typeof window !== 'undefined') {
         try {
-            return createSupabaseBrowserClient();
+            return createSPAClient();
         } catch (e) {
             console.error("Failed to create Supabase browser client:", e);
             toast({ title: "Initialization Error", description: "Could not initialize critical services. Please refresh.", variant: "destructive" });
@@ -91,11 +97,15 @@ export default function InvoiceReconcilerPage() {
     selectedAirlineData: null,
     selectedInvoiceId: null,
     selectedFile: null,
+    reportFile: null,
+    reportFileId: null,
     isValidSelection: false,
     canProceed: false,
     validationError: null,
     isLoadingAirlines: true,
-    isProcessingSelection: false
+    isProcessingSelection: false,
+    isProcessingReconciliation: false,
+    currentJobId: null
   });
   
   // Refetch key for InvoiceManager to force re-render/refetch
@@ -333,6 +343,79 @@ export default function InvoiceReconcilerPage() {
     };
   };
 
+  // Invoice validation function
+  const validateInvoiceSelection = useCallback((invoiceId: string | null = workflow.selectedInvoiceId, file: File | null = workflow.selectedFile): { isValid: boolean; canProceed: boolean; error: string | null } => {
+    // Must have either an existing invoice selected OR a new file selected, but not both
+    const hasInvoice = !!invoiceId;
+    const hasFile = !!file;
+    
+    if (!hasInvoice && !hasFile) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please either select an existing invoice or upload a new invoice file.'
+      };
+    }
+
+    if (hasInvoice && hasFile) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please choose either an existing invoice OR upload a new file, not both.'
+      };
+    }
+
+    return {
+      isValid: true,
+      canProceed: true,
+      error: null
+    };
+  }, [workflow.selectedInvoiceId, workflow.selectedFile]);
+
+  // Report file validation function
+  const validateReportSelection = useCallback((reportFile: File | null = workflow.reportFile): { isValid: boolean; canProceed: boolean; error: string | null } => {
+    if (!reportFile) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please upload an Excel report file to proceed.'
+      };
+    }
+
+    // Validate file type
+    const validExcelTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
+      'application/excel',
+      'application/x-excel',
+      'application/x-msexcel'
+    ];
+
+    if (!validExcelTypes.includes(reportFile.type) && !reportFile.name.toLowerCase().endsWith('.xlsx') && !reportFile.name.toLowerCase().endsWith('.xls')) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Please upload a valid Excel file (.xlsx or .xls).'
+      };
+    }
+
+    // Validate file size (25MB limit)
+    const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+    if (reportFile.size > maxSize) {
+      return {
+        isValid: false,
+        canProceed: false,
+        error: 'Report file size must be less than 25MB.'
+      };
+    }
+
+    return {
+      isValid: true,
+      canProceed: true,
+      error: null
+    };
+  }, [workflow.reportFile]);
+
   // Handle airline selection with enhanced validation and state management
   const handleAirlineChange = useCallback(async (airlineId: string | null) => {
     setWorkflow(prev => ({
@@ -416,7 +499,7 @@ export default function InvoiceReconcilerPage() {
       };
     });
     setInvoiceManagerKey(Date.now());
-  }, [toast]);
+  }, [toast, validateInvoiceSelection]);
 
   // Overall validation logic for the current step (invoice selection/upload)
   useEffect(() => {
@@ -432,6 +515,20 @@ export default function InvoiceReconcilerPage() {
       }));
     }
   }, [workflow.selectedInvoiceId, workflow.currentStep, workflow.selectedAirlineData, workflow.isProcessingSelection]);
+
+  // Overall validation logic for report upload step
+  useEffect(() => {
+    if (workflow.currentStep === 'report-upload') {
+      const validation = validateReportSelection(workflow.reportFile);
+      
+      setWorkflow(prev => ({
+        ...prev,
+        isValidSelection: validation.isValid,
+        canProceed: validation.canProceed,
+        validationError: validation.error,
+      }));
+    }
+  }, [workflow.reportFile, workflow.currentStep, validateReportSelection]);
   
   const handleInvoiceSelect = (invoiceId: string) => {
     setWorkflow(prev => ({
@@ -442,33 +539,148 @@ export default function InvoiceReconcilerPage() {
     }));
   };
 
-  const validateInvoiceSelection = (invoiceId: string | null = workflow.selectedInvoiceId, file: File | null = workflow.selectedFile): { isValid: boolean; canProceed: boolean; error: string | null } => {
-    // Must have either an existing invoice selected OR a new file selected, but not both
-    const hasInvoice = !!invoiceId;
-    const hasFile = !!file;
-    
-    if (!hasInvoice && !hasFile) {
-      return {
-        isValid: false,
-        canProceed: false,
-        error: 'Please either select an existing invoice or upload a new invoice file.'
-      };
+  // Handle report file selection
+  const handleReportFileSelect = useCallback((file: File) => {
+    const validation = validateReportSelection(file);
+    setWorkflow(prev => ({
+      ...prev,
+      reportFile: file,
+      reportFileId: null, // Reset file ID since we have a new file
+      isValidSelection: validation.isValid,
+      canProceed: validation.canProceed,
+      validationError: validation.error
+    }));
+
+    if (validation.canProceed) {
+      toast({
+        title: "Report File Selected",
+        description: `"${file.name}" is ready for processing.`,
+        variant: "success",
+      });
+    } else {
+      toast({
+        title: "Invalid Report File",
+        description: validation.error || "Please select a valid Excel file.",
+        variant: "destructive",
+      });
+    }
+  }, [toast, validateReportSelection]);
+
+  // Upload report file to storage
+  const uploadReportFile = useCallback(async (file: File): Promise<string | null> => {
+    if (!supabaseClient || !user?.id) {
+      toast({
+        title: "Upload Error",
+        description: "Unable to upload file. Please try again.",
+        variant: "destructive",
+      });
+      return null;
     }
 
-    if (hasInvoice && hasFile) {
-      return {
-        isValid: false,
-        canProceed: false,
-        error: 'Please choose either an existing invoice OR upload a new file, not both.'
-      };
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `${user.id}/invoice-reconciler/reports/${timestamp}_${file.name}`;
+      
+      const { error } = await supabaseClient.storage
+        .from('invoice-reconciler')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Report file upload error:', error);
+        toast({
+          title: "Upload Failed",
+          description: error.message || "Failed to upload report file.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      return fileName;
+    } catch (error: unknown) {
+      console.error('Unexpected error uploading report file:', error);
+      toast({
+        title: "Upload Error",
+        description: "An unexpected error occurred while uploading the file.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  }, [supabaseClient, user?.id, toast]);
+
+  // Call reconciliation API
+  const startReconciliation = useCallback(async (invoiceFileId: string, reportFileId: string, airlineType: string): Promise<string | null> => {
+    if (!supabaseClient) {
+      toast({
+        title: "Error",
+        description: "Unable to start reconciliation. Please try again.",
+        variant: "destructive",
+      });
+      return null;
     }
 
-    return {
-      isValid: true,
-      canProceed: true,
-      error: null
-    };
-  };
+    try {
+      const response = await fetch('/api/reconcile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          airlineType,
+          invoiceFileId,
+          reportFileId
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+
+      if (result.jobId) {
+        // Enhanced success feedback with airline-specific messaging
+        if (airlineType === 'flydubai') {
+          toast({
+            title: "🚀 Fly Dubai Reconciliation Job Created",
+            description: `Job ${result.jobId.substring(0, 8)}... has been successfully queued. The Fly Dubai processor will extract AWB and CCA data and perform detailed reconciliation analysis.`,
+            variant: "success",
+            duration: 7000,
+          });
+        } else {
+          toast({
+            title: "Reconciliation Started",
+            description: `${airlineType} reconciliation job has been started successfully.`,
+            variant: "success",
+          });
+        }
+        return result.jobId;
+      } else {
+        throw new Error('No job ID returned from reconciliation API.');
+      }
+    } catch (error: unknown) {
+      console.error('Error starting reconciliation:', error);
+      
+      // Enhanced error feedback with airline-specific messaging
+      if (airlineType === 'flydubai') {
+        toast({
+          title: "🚫 Fly Dubai Reconciliation Error",
+          description: `Failed to start Fly Dubai reconciliation: ${error instanceof Error ? error.message : "Please check your invoice and report files."}`,
+          variant: "destructive",
+          duration: 6000,
+        });
+      } else {
+        toast({
+          title: "Reconciliation Failed",
+          description: error instanceof Error ? error.message : "Failed to start reconciliation process.",
+          variant: "destructive",
+        });
+      }
+      return null;
+    }
+  }, [supabaseClient, toast]);
 
   // Enhanced navigation to next step with validation
   const handleNextStep = () => {
@@ -521,28 +733,48 @@ export default function InvoiceReconcilerPage() {
       setWorkflow(prev => ({
         ...prev,
         currentStep: 'report-upload',
+        reportFile: null,
+        reportFileId: null,
         validationError: null,
         canProceed: false, // Next step (report upload) will need its own validation
       }));
-      // Potentially reset report selection states here if any
       return;
     }
 
     if (workflow.currentStep === 'report-upload') {
-      // Placeholder for report upload validation and progression logic
-      // const reportValidation = validateReportSelection(); // Assuming a function like this
-      // if (!reportValidation.canProceed) {
-      //   toast({ title: "Report Required", description: reportValidation.error, variant: "destructive" });
-      //   return;
-      // }
-      // setWorkflow(prev => ({ ...prev, currentStep: 'processing' }));
-      // return;
-      console.log("Proceeding from report-upload. Validation pending.");
-       toast({title: "Dev Note", description: "Report upload and processing step not fully implemented in handleNextStep."}) 
+      const reportValidation = validateReportSelection();
+      setWorkflow(prev => ({
+        ...prev,
+        validationError: reportValidation.error,
+        canProceed: reportValidation.canProceed
+      }));
+
+      if (!reportValidation.canProceed) {
+        toast({
+          title: "Report Required",
+          description: reportValidation.error || "Please upload an Excel report file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Start the reconciliation process if all data is available
+      if (workflow.selectedAirlineData?.id && workflow.reportFile && workflow.selectedInvoiceId) {
+        handleStartReconciliation();
+        return;
+      } else {
+        // This else block will now catch cases where some data is genuinely missing,
+        // rather than incorrectly flagging non-Fly Dubai airlines.
+        toast({
+          title: "Configuration Error",
+          description: "Missing required data for reconciliation process. Ensure an airline, invoice, and report file are all selected and valid.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
     // Default case if canProceed was true but step not handled above explicitly for progression logic
-    // This might indicate a state where UI allowed 'Next' but logic isn't here, or it's the final step.
     if (!workflow.canProceed && workflow.currentStep !== 'completed') { // Check canProceed from state
        toast({
         title: "Cannot Proceed",
@@ -551,6 +783,119 @@ export default function InvoiceReconcilerPage() {
       });
     }
   };
+
+  // Handle starting the reconciliation process
+  const handleStartReconciliation = useCallback(async () => {
+    if (!workflow.reportFile || !workflow.selectedInvoiceId || !workflow.selectedAirlineData) {
+      toast({
+        title: "Missing Data",
+        description: "Please ensure both invoice and report are ready.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setWorkflow(prev => ({
+      ...prev,
+      isProcessingReconciliation: true,
+      currentStep: 'processing',
+      validationError: null
+    }));
+
+    try {
+      // Enhanced upload feedback for Fly Dubai
+      if (workflow.selectedAirlineData.id === 'flydubai') {
+        toast({
+          title: "🚀 Fly Dubai Reconciliation Starting",
+          description: "Uploading your Excel report file for Fly Dubai processing...",
+          variant: "default",
+          duration: 4000,
+        });
+      } else {
+        toast({
+          title: "Uploading Report",
+          description: "Uploading your Excel report file...",
+          variant: "default",
+        });
+      }
+
+      const reportFileId = await uploadReportFile(workflow.reportFile);
+      if (!reportFileId) {
+        throw new Error('Failed to upload report file');
+      }
+
+      setWorkflow(prev => ({
+        ...prev,
+        reportFileId
+      }));
+
+      // Enhanced reconciliation start feedback for Fly Dubai
+      if (workflow.selectedAirlineData.id === 'flydubai') {
+        toast({
+          title: "✈️ Processing Fly Dubai Data",
+          description: "Initiating Fly Dubai reconciliation engine. This typically takes 5-7 minutes to extract invoice data and perform detailed reconciliation analysis.",
+          variant: "default",
+          duration: 6000,
+        });
+      } else {
+        toast({
+          title: "Starting Reconciliation",
+          description: `Initiating ${workflow.selectedAirlineData.name} reconciliation process...`,
+          variant: "default",
+        });
+      }
+
+      const jobId = await startReconciliation(
+        workflow.selectedInvoiceId,
+        reportFileId,
+        workflow.selectedAirlineData.id
+      );
+
+      if (jobId) {
+        setWorkflow(prev => ({
+          ...prev,
+          currentJobId: jobId,
+          isProcessingReconciliation: false // The job is now running server-side
+        }));
+
+        // Enhanced success feedback for Fly Dubai job submission
+        if (workflow.selectedAirlineData.id === 'flydubai') {
+          toast({
+            title: "🎯 Fly Dubai Job Started Successfully!",
+            description: `Job ID: ${jobId.substring(0, 8)}... • Your Fly Dubai reconciliation is now processing. You can monitor progress in the Job History section.`,
+            variant: "success",
+            duration: 8000,
+          });
+        }
+      } else {
+        throw new Error('Failed to start reconciliation job');
+      }
+    } catch (error: unknown) {
+      console.error('Error in handleStartReconciliation:', error);
+      setWorkflow(prev => ({
+        ...prev,
+        isProcessingReconciliation: false,
+        currentStep: 'report-upload', // Go back to previous step
+        validationError: error instanceof Error ? error.message : 'Failed to start reconciliation process'
+      }));
+      
+      // Enhanced error feedback for Fly Dubai
+      if (workflow.selectedAirlineData?.id === 'flydubai') {
+        toast({
+          title: "❌ Fly Dubai Reconciliation Failed",
+          description: `Unable to start Fly Dubai reconciliation: ${error instanceof Error ? error.message : "Please check your files and try again."}`,
+          variant: "destructive",
+          duration: 6000,
+        });
+      } else {
+        toast({
+          title: "Reconciliation Failed",
+          description: error instanceof Error ? error.message : "Unable to start reconciliation. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [workflow.reportFile, workflow.selectedInvoiceId, workflow.selectedAirlineData, uploadReportFile, startReconciliation, toast]);
 
   // Navigate to previous step
   const handlePreviousStep = () => {
@@ -861,7 +1206,7 @@ export default function InvoiceReconcilerPage() {
                     <h4 className="font-semibold text-blue-800 mb-2">Need a Subscription?</h4>
                     <p className="text-blue-700 text-sm">
                       Contact our support team to set up your Invoice Reconciler subscription. 
-                      We'll help you get started with automated invoice reconciliation.
+                      We&apos;ll help you get started with automated invoice reconciliation.
                     </p>
                   </div>
                 )}
@@ -988,7 +1333,7 @@ export default function InvoiceReconcilerPage() {
                         </p>
                       </div>
                       <p className="text-green-700 text-sm mt-2">
-                        Click "Continue" to proceed to invoice upload
+                        Click &quot;Continue&quot; to proceed to invoice upload
                       </p>
                     </div>
                   )}
@@ -998,6 +1343,7 @@ export default function InvoiceReconcilerPage() {
               {workflow.currentStep === 'invoice-upload' && (
                 <div className="space-y-6">
                   <InvoiceManager
+                    key={invoiceManagerKey}
                     selectedAirline={workflow.selectedAirline}
                     selectedInvoiceId={workflow.selectedInvoiceId}
                     onInvoiceSelect={handleInvoiceSelect}
@@ -1025,7 +1371,7 @@ export default function InvoiceReconcilerPage() {
                         </p>
                       </div>
                       <p className="text-green-700 text-sm mt-2">
-                        Click "Continue" to proceed to Excel report upload
+                        Click &quot;Continue&quot; to proceed to Excel report upload
                       </p>
                     </div>
                   )}
@@ -1040,7 +1386,7 @@ export default function InvoiceReconcilerPage() {
                         </p>
                       </div>
                       <p className="text-green-700 text-sm mt-2">
-                        File: {workflow.selectedFile.name} • Click "Continue" to proceed to Excel report upload
+                        File: {workflow.selectedFile.name} • Click &quot;Continue&quot; to proceed to Excel report upload
                       </p>
                     </div>
                   )}
@@ -1078,56 +1424,230 @@ export default function InvoiceReconcilerPage() {
                       </p>
                     </div>
                     <p className="text-gray-600 mb-6">
-                      Drop your Excel report here or click to browse
+                      Upload your standardized Excel report file. This format is the same for all airlines.
                     </p>
-                    <div className="bg-white rounded-xl p-12 border-2 border-dashed border-green-200 text-center hover:border-green-300 transition-colors">
-                      <FileText className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg mb-2">Excel report upload interface will be implemented here</p>
-                      <p className="text-sm text-gray-500">
-                        📊 Excel Report: Standardized format (same for all airlines)
-                      </p>
+                    
+                    {/* File Upload Interface */}
+                    <div className="bg-white rounded-xl border-2 border-dashed border-green-200 hover:border-green-300 transition-colors">
+                      <div 
+                        className="p-12 text-center cursor-pointer"
+                        onClick={() => document.getElementById('report-file-input')?.click()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const files = e.dataTransfer.files;
+                          if (files.length > 0) {
+                            handleReportFileSelect(files[0]);
+                          }
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDragEnter={(e) => e.preventDefault()}
+                      >
+                        {workflow.reportFile ? (
+                          <div className="space-y-4">
+                            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+                            <div>
+                              <p className="text-lg font-semibold text-green-800 mb-2">
+                                File Ready: {workflow.reportFile.name}
+                              </p>
+                              <p className="text-sm text-green-600 mb-4">
+                                Size: {(workflow.reportFile.size / (1024 * 1024)).toFixed(2)} MB
+                              </p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setWorkflow(prev => ({
+                                    ...prev,
+                                    reportFile: null,
+                                    reportFileId: null,
+                                    canProceed: false,
+                                    validationError: 'Please upload an Excel report file to proceed.'
+                                  }));
+                                }}
+                                className="border-green-300 text-green-700 hover:bg-green-50"
+                              >
+                                Choose Different File
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <FileText className="h-16 w-16 text-green-400 mx-auto" />
+                            <div>
+                              <p className="text-lg font-semibold text-gray-700 mb-2">
+                                Drop your Excel report here
+                              </p>
+                              <p className="text-sm text-gray-500 mb-4">
+                                or click to browse files
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                Supports .xlsx and .xls files up to 25MB
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <input
+                        id="report-file-input"
+                        type="file"
+                        className="hidden"
+                        accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleReportFileSelect(file);
+                          }
+                        }}
+                      />
                     </div>
+                    
+                    {/* Validation feedback for report upload */}
+                    {workflow.validationError && workflow.currentStep === 'report-upload' && (
+                      <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-5 w-5 text-red-600" />
+                          <p className="text-red-800 font-medium">
+                            {workflow.validationError}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Success feedback for report upload */}
+                    {workflow.reportFile && workflow.canProceed && (
+                      <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <p className="text-green-800 font-medium">
+                            Excel report ready for processing
+                          </p>
+                        </div>
+                        <p className="text-green-700 text-sm mt-2">
+                          Click &quot;Start Reconciliation&quot; to begin processing your {workflow.selectedAirlineData?.name} data
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
               {workflow.currentStep === 'processing' && (
                 <div className="space-y-6">
-                  {/* Processing Status */}
+                  {/* Enhanced Processing Status for Fly Dubai */}
                   <div className="bg-gradient-to-r from-purple-500 to-violet-500 text-white rounded-xl p-8 text-center">
                     <div className="animate-spin h-12 w-12 text-white mx-auto mb-6">
                       <RefreshCw className="h-12 w-12" />
                     </div>
-                    <p className="text-white font-semibold text-xl mb-3">
-                      Processing {workflow.selectedAirlineData?.name} Reconciliation
-                    </p>
-                    <p className="text-white/90">
-                      Estimated completion: 5-7 minutes
-                    </p>
                     
-                    {/* Simple Processing Steps */}
+                    {workflow.selectedAirlineData?.id === 'flydubai' ? (
+                      <>
+                        <p className="text-white font-semibold text-xl mb-3">
+                          🛩️ Processing Fly Dubai Reconciliation
+                        </p>
+                        <p className="text-white/90 mb-2">
+                          Your Fly Dubai invoice and report are being analyzed
+                        </p>
+                        <p className="text-white/80 text-sm">
+                          Estimated completion: 5-7 minutes • Job ID: {workflow.currentJobId ? workflow.currentJobId.substring(0, 8) + '...' : 'Generating...'}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-white font-semibold text-xl mb-3">
+                          Processing {workflow.selectedAirlineData?.name} Reconciliation
+                        </p>
+                        <p className="text-white/90">
+                          Estimated completion: 5-7 minutes
+                        </p>
+                      </>
+                    )}
+                    
+                    {/* Enhanced Processing Steps for Fly Dubai */}
                     <div className="mt-6 text-left bg-white/10 rounded-lg p-4">
-                      <h4 className="font-semibold mb-3 text-center">Processing Steps:</h4>
+                      <h4 className="font-semibold mb-3 text-center">
+                        {workflow.selectedAirlineData?.id === 'flydubai' ? 'Fly Dubai Processing Steps:' : 'Processing Steps:'}
+                      </h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4" />
-                          <span>Extracting invoice data...</span>
+                          <span>
+                            {workflow.selectedAirlineData?.id === 'flydubai' 
+                              ? 'Extracting AWB and CCA data from Fly Dubai invoice...' 
+                              : 'Extracting invoice data...'
+                            }
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                          <span>Processing Excel report data...</span>
+                          <span>
+                            {workflow.selectedAirlineData?.id === 'flydubai' 
+                              ? 'Processing standardized Excel report data...' 
+                              : 'Processing Excel report data...'
+                            }
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-white/60">
                           <div className="w-4 h-4 border-2 border-white/30 rounded-full"></div>
-                          <span>Performing reconciliation analysis...</span>
+                          <span>
+                            {workflow.selectedAirlineData?.id === 'flydubai' 
+                              ? 'Performing Fly Dubai-specific reconciliation analysis...' 
+                              : 'Performing reconciliation analysis...'
+                            }
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-white/60">
                           <div className="w-4 h-4 border-2 border-white/30 rounded-full"></div>
-                          <span>Generating detailed report...</span>
+                          <span>
+                            {workflow.selectedAirlineData?.id === 'flydubai' 
+                              ? 'Generating Fly Dubai reconciliation report with summary, AWB, and CCA sheets...' 
+                              : 'Generating detailed report...'
+                            }
+                          </span>
                         </div>
                       </div>
                     </div>
+
+                    {/* Additional Fly Dubai specific information */}
+                    {workflow.selectedAirlineData?.id === 'flydubai' && (
+                      <div className="mt-4 text-left bg-white/5 rounded-lg p-4 border border-white/20">
+                        <h5 className="font-medium mb-2 text-center text-white/90">What we&apos;re processing:</h5>
+                        <div className="space-y-1 text-xs text-white/80">
+                          <div className="flex justify-between">
+                            <span>• AWB (Air Waybill) data extraction</span>
+                            <span>✓</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>• CCA (Cargo Charges Correction) analysis</span>
+                            <span>⏳</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>• Net due amount reconciliation</span>
+                            <span>⏳</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>• Multi-sheet Excel report generation</span>
+                            <span>⏳</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Processing Tips for Fly Dubai */}
+                  {workflow.selectedAirlineData?.id === 'flydubai' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="h-5 w-5 text-blue-600" />
+                        <h4 className="font-semibold text-blue-800">Fly Dubai Processing Info</h4>
+                      </div>
+                      <p className="text-blue-700 text-sm">
+                        Your Fly Dubai reconciliation job is running in the background. You can safely navigate away and return later to check the results in the Job History section. 
+                        The system will extract AWB and CCA data from your invoice and perform detailed reconciliation against your Excel report.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

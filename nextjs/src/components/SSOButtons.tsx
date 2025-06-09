@@ -1,6 +1,6 @@
 'use client';
 
-import { createSPAClient } from '@/lib/supabase/client';
+import { createSPASassClient } from '@/lib/supabase/client';
 import Link from "next/link";
 
 type Provider = 'google';
@@ -29,7 +29,8 @@ const PROVIDER_CONFIGS = {
 export default function SSOButtons({ onError }: SSOButtonsProps) {
     const handleSSOLogin = async (provider: Provider) => {
         try {
-            const supabase = createSPAClient();
+            const sassClient = await createSPASassClient();
+            const supabase = sassClient.getSupabaseClient();
             const { error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
