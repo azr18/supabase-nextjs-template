@@ -104,11 +104,11 @@ BEGIN
     END IF;
     
     -- Validate path structure based on content type
-    -- For invoice-reconciler: user_id/saved_invoices/airline_type/filename
-    --                     or user_id/jobs/job_id/filename
+    -- For invoice-reconciler N8N approach: user_id/jobs/job_id/filename
+    --                                   or user_id/reports/job_id/filename  
     IF array_length(path_parts, 1) >= 3 THEN
-        -- Check for valid second-level directories
-        IF path_parts[2] NOT IN ('saved_invoices', 'jobs', 'reports') THEN
+        -- Check for valid second-level directories (no saved_invoices for N8N approach)
+        IF path_parts[2] NOT IN ('jobs', 'reports') THEN
             RETURN false;
         END IF;
     END IF;

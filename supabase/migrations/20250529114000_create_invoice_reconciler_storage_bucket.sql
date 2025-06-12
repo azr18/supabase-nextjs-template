@@ -152,4 +152,124 @@ SELECT
     'Storage Bucket Summary' as summary_type,
     'invoice-reconciler bucket created with 25MB file limit and restricted MIME types' as configuration,
     'Supports user isolation, persistent invoice storage, and job-specific file organization' as features,
-    'Ready for RLS policy implementation and production use' as readiness_status; 
+    'Ready for RLS policy implementation and production use' as readiness_status;
+
+-- Migration: Create invoice-reconciler storage bucket for temporary job files
+-- This bucket stores uploaded PDF invoices and Excel reports temporarily during processing
+
+-- Create storage bucket for invoice reconciler temporary job files
+-- Note: This bucket may already exist from previous setup
+DO $$
+BEGIN
+    -- Create bucket if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'invoice-reconciler') THEN
+        INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+        VALUES (
+            'invoice-reconciler',
+            'invoice-reconciler',
+            false, -- Private bucket for security
+            26214400, -- 25MB file size limit per file
+            ARRAY[
+                'application/pdf',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/csv',
+                'application/json'
+            ]
+        );
+    END IF;
+END $$;
+
+-- Storage bucket organization structure:
+-- user_id/jobs/job_id/invoice.pdf
+-- user_id/jobs/job_id/report.xlsx
+-- This structure ensures:
+-- - User isolation at the top level
+-- - Job-specific organization for easy cleanup
+-- - Clear file identification for N8N processing
+
+-- RLS Policies for invoice-reconciler bucket
+-- These policies may already exist from previous migrations
+
+-- Policy 1: Users can select their own files
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Allow authenticated select from own invoice-reconciler folder'
+    ) THEN
+        CREATE POLICY "Allow authenticated select from own invoice-reconciler folder"
+        ON storage.objects
+        FOR SELECT
+        USING (
+            bucket_id = 'invoice-reconciler' 
+            AND (storage.foldername(name))[1] = auth.uid()::text
+        );
+    END IF;
+END $$;
+
+-- Policy 2: Users can insert files to their own folder
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Allow authenticated insert to own invoice-reconciler folder'
+    ) THEN
+        CREATE POLICY "Allow authenticated insert to own invoice-reconciler folder"
+        ON storage.objects
+        FOR INSERT
+        WITH CHECK (
+            bucket_id = 'invoice-reconciler' 
+            AND (storage.foldername(name))[1] = auth.uid()::text
+        );
+    END IF;
+END $$;
+
+-- Policy 3: Users can update their own files
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Allow authenticated update in own invoice-reconciler folder'
+    ) THEN
+        CREATE POLICY "Allow authenticated update in own invoice-reconciler folder"
+        ON storage.objects
+        FOR UPDATE
+        USING (
+            bucket_id = 'invoice-reconciler' 
+            AND (storage.foldername(name))[1] = auth.uid()::text
+        )
+        WITH CHECK (
+            bucket_id = 'invoice-reconciler' 
+            AND (storage.foldername(name))[1] = auth.uid()::text
+        );
+    END IF;
+END $$;
+
+-- Policy 4: Users can delete their own files
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'storage' 
+        AND tablename = 'objects' 
+        AND policyname = 'Allow authenticated delete from own invoice-reconciler folder'
+    ) THEN
+        CREATE POLICY "Allow authenticated delete from own invoice-reconciler folder"
+        ON storage.objects
+        FOR DELETE
+        USING (
+            bucket_id = 'invoice-reconciler' 
+            AND (storage.foldername(name))[1] = auth.uid()::text
+        );
+    END IF;
+END $$;
+
+-- Enable RLS on storage.objects if not already enabled
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY; 

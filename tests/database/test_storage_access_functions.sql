@@ -36,7 +36,7 @@ SELECT public.check_user_owns_storage_object('22222222-2222-2222-2222-2222222222
 SELECT 'Test 2: File path validation' as test_name;
 
 -- Valid paths
-SELECT public.validate_invoice_reconciler_file_path('11111111-1111-1111-1111-111111111111/saved_invoices/fly-dubai/invoice.pdf') as valid_saved_invoice_path;
+SELECT public.validate_invoice_reconciler_file_path('11111111-1111-1111-1111-111111111111/jobs/job123/invoice.pdf') as valid_job_path;
 SELECT public.validate_invoice_reconciler_file_path('11111111-1111-1111-1111-111111111111/jobs/job-123/report.xlsx') as valid_job_path;
 SELECT public.validate_invoice_reconciler_file_path('11111111-1111-1111-1111-111111111111/reports/result.xlsx') as valid_report_path;
 
@@ -105,7 +105,7 @@ ROLLBACK;
 -- (bucket_id = 'invoice-reconciler' AND auth.uid() IS NOT NULL AND owner = auth.uid() AND public.check_user_owns_storage_object(name) AND public.check_user_has_tool_access_for_storage(bucket_id))
 --
 -- Expected File Organization Structure:
--- - user_id/saved_invoices/airline_type/filename.pdf (for persistent invoices)
+-- - user_id/jobs/job_id/filename.pdf (for temporary job files)
 -- - user_id/jobs/job_id/filename.xlsx (for job-specific report files)
 -- - user_id/reports/filename.xlsx (for generated reconciliation reports)
 --

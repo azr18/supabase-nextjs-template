@@ -6,12 +6,34 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Lock, RefreshCw, AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { Database } from '@/lib/supabase/types';
 import { useGlobal } from '@/lib/context/GlobalContext';
 import { subscriptionFeedback } from '@/lib/subscriptions/subscriptionFeedback';
 
-type Tool = Database['public']['Tables']['tools']['Row'];
-type UserToolSubscription = Database['public']['Tables']['user_tool_subscriptions']['Row'];
+type Tool = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  status: string;
+  order_index: number | null;
+};
+
+type UserToolSubscription = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tool_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+  trial_ends_at: string | null;
+  external_subscription_id: string | null;
+  notes: string | null;
+};
 
 interface ToolWithSubscription extends Tool {
   subscription?: UserToolSubscription | null;

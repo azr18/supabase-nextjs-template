@@ -13,9 +13,19 @@ import {
   Shield
 } from 'lucide-react';
 import { ToolWithSubscription } from '@/lib/supabase/queries/tools';
-import { Database } from '@/lib/supabase/types';
-
-type UserToolSubscription = Database['public']['Tables']['user_tool_subscriptions']['Row'];
+type UserToolSubscription = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tool_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+  trial_ends_at: string | null;
+  external_subscription_id: string | null;
+  notes: string | null;
+};
 
 interface SubscriptionStatusSummaryProps {
   tools: ToolWithSubscription[];

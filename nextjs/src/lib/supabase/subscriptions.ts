@@ -1,6 +1,19 @@
 import { createSPAClient } from './client'
 import { createClient } from './server'
-import { Database, UserToolSubscription } from './types'
+// import { Database, UserToolSubscription } from './types'
+type UserToolSubscription = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tool_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+  trial_ends_at: string | null;
+  external_subscription_id: string | null;
+  notes: string | null;
+};
 import { SupabaseClient } from '@supabase/supabase-js'
 
 // Types for subscription checking results
@@ -39,9 +52,9 @@ export interface UserSubscriptionSummary {
  * Optimized for performance with minimal database queries
  */
 export class SubscriptionManager {
-  private supabase: SupabaseClient<Database>
+  private supabase: SupabaseClient<any>
 
-  constructor(supabase?: SupabaseClient<Database>) {
+  constructor(supabase?: SupabaseClient<any>) {
     this.supabase = supabase || createSPAClient()
   }
 

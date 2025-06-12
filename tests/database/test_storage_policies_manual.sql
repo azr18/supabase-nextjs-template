@@ -62,7 +62,7 @@ INSERT INTO storage.objects (
 (
     gen_random_uuid(),
     'invoice-reconciler',
-    '11111111-1111-1111-1111-111111111111/saved_invoices/fly-dubai/invoice1.pdf',
+    '11111111-1111-1111-1111-111111111111/jobs/job123/invoice1.pdf',
     '11111111-1111-1111-1111-111111111111'::uuid,
     NOW(),
     NOW(),
@@ -81,7 +81,7 @@ INSERT INTO storage.objects (
 (
     gen_random_uuid(),
     'invoice-reconciler',
-    '22222222-2222-2222-2222-222222222222/saved_invoices/tap/invoice2.pdf',
+    '22222222-2222-2222-2222-222222222222/jobs/job456/invoice2.pdf',
     '22222222-2222-2222-2222-222222222222'::uuid,
     NOW(),
     NOW(),
@@ -138,7 +138,7 @@ INSERT INTO storage.objects (
 ) VALUES (
     gen_random_uuid(),
     'invoice-reconciler',
-    '11111111-1111-1111-1111-111111111111/saved_invoices/tap/new-invoice.pdf',
+    '11111111-1111-1111-1111-111111111111/jobs/job789/new-invoice.pdf',
     '11111111-1111-1111-1111-111111111111'::uuid,
     NOW(),
     NOW(),
@@ -190,7 +190,7 @@ INSERT INTO storage.objects (
 SELECT name, owner 
 FROM storage.objects 
 WHERE bucket_id = 'invoice-reconciler' 
-AND name = '22222222-2222-2222-2222-222222222222/saved_invoices/tap/invoice2.pdf';
+    AND name = '22222222-2222-2222-2222-222222222222/jobs/job456/invoice2.pdf';
 */
 
 -- Expected result: Empty result set (policy blocks access)
@@ -234,7 +234,7 @@ WHERE id IN (
 -- // Test file upload
 -- const { data, error } = await supabase.storage
 --   .from('invoice-reconciler')
---   .upload('user-id/saved_invoices/fly-dubai/test.pdf', file);
+--   .upload('user-id/jobs/job-id/test.pdf', file);
 --
 -- // Should succeed for valid paths, fail for invalid paths
 -- console.log('Upload result:', { data, error });
@@ -242,7 +242,7 @@ WHERE id IN (
 -- // Test file listing  
 -- const { data: files, error: listError } = await supabase.storage
 --   .from('invoice-reconciler')
---   .list('user-id/saved_invoices');
+--   .list('user-id/jobs');
 --
 -- // Should only show user's own files
 -- console.log('Files:', { files, listError }); 

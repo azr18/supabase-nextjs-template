@@ -1,10 +1,52 @@
 import { createSPASassClient } from '@/lib/supabase/client';
-import { Database } from '@/lib/supabase/types';
 
-type ReconciliationJob = Database['public']['Tables']['reconciliation_jobs']['Row'];
-type Tool = Database['public']['Tables']['tools']['Row'];
+type Tool = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  status: string;
+  order_index: number | null;
+};
 
-export interface JobWithToolInfo extends ReconciliationJob {
+// Type that matches what we actually get from the query
+export interface JobWithToolInfo {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tool_id: string;
+  airline_type: string;
+  job_name: string;
+  description: string | null;
+  status: string;
+  progress_percentage: number;
+  started_at: string | null;
+  completed_at: string | null;
+  failed_at: string | null;
+  actual_duration_minutes: number | null;
+  estimated_duration_minutes: number | null;
+  error_message: string | null;
+  error_details: unknown | null;
+  result_summary: unknown | null;
+  processing_metadata: unknown | null;
+  invoice_file_id: string | null;
+  invoice_file_path: string | null;
+  report_file_id: string | null;
+  report_file_path: string | null;
+  result_file_path: string | null;
+  // N8N fields - making them optional for now since they might not exist in current types
+  webhook_payload?: unknown | null;
+  webhook_triggered_at?: string | null;
+  callback_url?: string | null;
+  expires_at?: string | null;
+  n8n_workflow_id?: string | null;
+  n8n_execution_id?: string | null;
+  n8n_response_received_at?: string | null;
+  // Joined tool data
   tool?: Tool | null;
 }
 

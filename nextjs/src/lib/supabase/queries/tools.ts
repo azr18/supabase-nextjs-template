@@ -1,11 +1,41 @@
 import { createSPASassClient } from '@/lib/supabase/client';
-import { Database } from '@/lib/supabase/types';
-import { PostgrestSingleResponse, PostgrestResponse } from '@supabase/supabase-js';
 
-type Tool = Database['public']['Tables']['tools']['Row'];
-type UserToolSubscription = Database['public']['Tables']['user_tool_subscriptions']['Row'];
+type Tool = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  status: string;
+  order_index: number | null;
+};
 
-export interface ToolWithSubscription extends Tool {
+type UserToolSubscription = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tool_id: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+  trial_ends_at: string | null;
+  external_subscription_id: string | null;
+  notes: string | null;
+};
+
+export interface ToolWithSubscription {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  status: string;
+  order_index: number | null;
   subscription?: UserToolSubscription | null;
 }
 
