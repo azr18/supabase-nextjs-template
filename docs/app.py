@@ -292,41 +292,79 @@ def extract_cca_data(pdf): # Changed signature to accept pdf object
     num_pages = len(pdf.pages)
     print(f"PDF has {num_pages} pages (in CCA function).")
     
-    # --- Find the CCA Page Dynamically --- 
+    # --- Find ALL CCA Pages Dynamically --- 
     # Start searching after potential AWB pages (e.g., page 2 onwards, index 1)
     # Adjust start_search_page if AWB data could theoretically be on very few pages
     start_search_page = 1 
-    print(f"Searching for 'Section B: CCA Details' starting from page {start_search_page + 1}...")
+    cca_start_page = -1
+    cca_pages = []
+    
+    print(f"Searching for CCA pages starting from page {start_search_page + 1}...")
     for page_num in range(start_search_page, num_pages):
         print(f"  Checking page {page_num + 1}...")
         try:
             page_to_check = pdf.pages[page_num]
             text_to_check = page_to_check.extract_text()
             if text_to_check and "Section B: CCA Details" in text_to_check:
-                target_page = page_num
-                print(f"  -> Found CCA header on page {target_page + 1}!")
-                break # Stop searching once found
+                if cca_start_page == -1:
+                    cca_start_page = page_num
+                    print(f"  -> Found first CCA header on page {page_num + 1}!")
+                cca_pages.append(page_num)
+                print(f"  -> Added page {page_num + 1} to CCA pages list.")
         except Exception as e:
             print(f"Warning: Error checking page {page_num + 1} for CCA header: {e}")
-    # --- End Find Page ---
+    
+    # If we found a starting page, also include subsequent pages until the end of document
+    # since CCA data can span multiple pages even without the header on each page
+    if cca_start_page != -1:
+        # Add any pages after the last found CCA page until end of document
+        last_cca_page = max(cca_pages) if cca_pages else cca_start_page
+        for page_num in range(last_cca_page + 1, num_pages):
+            # Check if this page might contain CCA data (has numeric patterns typical of CCA)
+            try:
+                page_to_check = pdf.pages[page_num]
+                text_to_check = page_to_check.extract_text()
+                if text_to_check:
+                    # Look for patterns that suggest CCA data continues
+                    if any(pattern in text_to_check for pattern in ["CCA Ref", "AWB", "Due Agent", "Freight"]):
+                        cca_pages.append(page_num)
+                        print(f"  -> Added continuation page {page_num + 1} to CCA pages list.")
+                    else:
+                        # Stop if we hit a page that doesn't seem to have CCA content
+                        break
+            except Exception as e:
+                print(f"Warning: Error checking page {page_num + 1} for CCA continuation: {e}")
+                break
+        
+        print(f"  -> Total CCA pages found: {[p+1 for p in cca_pages]}")
+    
+    # --- End Find CCA Pages ---
 
-    if target_page != -1: # Check if CCA page was found
-        try:
-            page = pdf.pages[target_page]
-            # --- Use standard extraction --- 
-            print(f"Using standard text extraction (no layout=True) for Page {target_page + 1}.")
-            raw_text_cca_page = page.extract_text()
-            # --- 
-            if raw_text_cca_page:
-                print(f"  -> Extracted {len(raw_text_cca_page)} characters from page {target_page + 1}.")
-            else:
-                print(f"  -> No text extracted from page {target_page + 1} using standard extraction.")
-        except Exception as e:
-             print(f"Error extracting text from CCA page {target_page + 1}: {e}")
-             raw_text_cca_page = "" # Ensure it's empty on error
+    if cca_pages: # Check if any CCA pages were found
+        # Extract text from ALL CCA pages and combine
+        raw_text_cca_page = ""
+        print(f"Extracting text from {len(cca_pages)} CCA pages...")
+        for page_num in cca_pages:
+            try:
+                page = pdf.pages[page_num]
+                # --- Use standard extraction --- 
+                print(f"  Using standard text extraction for Page {page_num + 1}.")
+                page_text = page.extract_text()
+                if page_text:
+                    raw_text_cca_page += page_text + "\n"  # Add page separator
+                    print(f"    -> Extracted {len(page_text)} characters from page {page_num + 1}.")
+                else:
+                    print(f"    -> No text extracted from page {page_num + 1}.")
+            except Exception as e:
+                print(f"Error extracting text from CCA page {page_num + 1}: {e}")
+        
+        if raw_text_cca_page:
+            print(f"  -> Total CCA text extracted: {len(raw_text_cca_page)} characters from {len(cca_pages)} pages.")
+        else:
+            print(f"  -> No text extracted from any CCA pages.")
     else:
         print("Warning: 'Section B: CCA Details' header not found in the document. Assuming no CCA data.")
-        return pd.DataFrame() # Return empty DF if no CCA page found
+        return pd.DataFrame() # Return empty DF if no CCA pages found
 
     # --- Process using findall on the raw text block --- 
     print("--- Starting CCA processing using findall on raw text --- ")
@@ -796,7 +834,14 @@ def process_file(file_path, report_data_df=None): # Add report_data_df parameter
             # Keep only Net Due difference
             # df_reconciliation['Diff Charge Weight'] = df_reconciliation['Charge Weight (Report)'].sub(df_reconciliation['Charge Weight (Invoice)'])
             # df_reconciliation['Diff Net Yield Rate'] = df_reconciliation['Net Yield Rate (Report)'].sub(df_reconciliation['Net Yield Rate (Invoice)'])
-            df_reconciliation['Diff Net Due'] = df_reconciliation['Net Due (Report)'].sub(df_reconciliation['Net Due (Invoice)'])
+            
+            # Calculate Diff Net Due with special handling for missing report data
+            # When report data is missing (NaN), show the invoice amount as the difference
+            df_reconciliation['Diff Net Due'] = df_reconciliation.apply(
+                lambda row: row['Net Due (Invoice)'] if pd.isna(row['Net Due (Report)']) 
+                else row['Net Due (Report)'] - row['Net Due (Invoice)'], 
+                axis=1
+            )
             print("  -> Calculated difference columns.")
 
             # --- Add Discrepancy Flag ---
@@ -910,19 +955,42 @@ def process_file(file_path, report_data_df=None): # Add report_data_df parameter
                     avg_net_yield_rate = (total_invoice_amount / total_charge_weight) if total_charge_weight else 0.0
                     
                     summary_data['Invoice AWB Count'] = invoice_awb_count
-                    summary_data['Total Invoice Amount (Net Due)'] = total_invoice_amount
-                    summary_data['Total Invoice Charge Weight'] = total_charge_weight
-                    summary_data['Average Net Yield Rate'] = avg_net_yield_rate # Updated name/calculation
+                    summary_data['Total AWB Amount (Net Due)'] = total_invoice_amount
+                    # Store these for later use after CCA calculation
+                    temp_charge_weight = total_charge_weight
+                    temp_avg_rate = avg_net_yield_rate
                     print(f"  -> Calculated Invoice Stats (using filtered df_awb_for_recon): Count={invoice_awb_count}, Amount={total_invoice_amount:.2f}, Weight={total_charge_weight:.2f}, Avg Rate={avg_net_yield_rate:.5f}")
                 else:
-                     print("  -> df_awb_for_recon became empty after re-applying 'Total' row filter for summary.")
-                     summary_data['Invoice AWB Count'] = 0
-                     summary_data['Total Invoice Amount (Net Due)'] = 0.0
-                     summary_data['Total Invoice Charge Weight'] = 0.0
-                     summary_data['Average Net Yield Rate'] = 0.0
+                    print("  -> df_awb_for_recon became empty after re-applying 'Total' row filter for summary.")
+                    summary_data['Invoice AWB Count'] = 0
+                    summary_data['Total AWB Amount (Net Due)'] = 0.0
+                    temp_charge_weight = 0.0
+                    temp_avg_rate = 0.0
 
             else:
                 summary_data['Invoice AWB Count'] = 0
+                temp_charge_weight = 0.0
+                temp_avg_rate = 0.0
+
+            # Calculate CCA total amount
+            total_cca_amount = 0.0
+            if not df_cca_final.empty:
+                # Filter out the total row and sum the Net Due column
+                df_cca_summary_input = df_cca_final[df_cca_final['CCA Ref. No'] != 'Total'].copy()
+                if not df_cca_summary_input.empty and 'Net Due for AWB (Sale Currency)' in df_cca_summary_input.columns:
+                    total_cca_amount = df_cca_summary_input['Net Due for AWB (Sale Currency)'].sum()
+                    print(f"  -> Calculated CCA Total Amount: {total_cca_amount:.2f}")
+
+            summary_data['Total CCA Amount (Net Due)'] = total_cca_amount
+            
+            # Calculate combined total (AWB + CCA)
+            total_awb_amount = summary_data.get('Total AWB Amount (Net Due)', 0.0)
+            total_combined_amount = total_awb_amount + total_cca_amount
+            summary_data['Total Invoice Amount (AWB + CCA)'] = total_combined_amount
+
+            # Add the charge weight and average rate after the totals
+            summary_data['Total Invoice Charge Weight'] = temp_charge_weight
+            summary_data['Average Net Yield Rate'] = temp_avg_rate
 
             # Calculate report totals from the reconciliation dataframe (which is based on left merge)
             if not df_reconciliation.empty and 'Net Due (Report)' in df_reconciliation.columns:
@@ -930,14 +998,15 @@ def process_file(file_path, report_data_df=None): # Add report_data_df parameter
                 df_rec_summary_input = df_reconciliation[df_reconciliation['AWB Prefix'] != 'Total'].copy()
                 if not df_rec_summary_input.empty:
                     total_report_cost = df_rec_summary_input['Net Due (Report)'].sum()
-                    difference_total_amount = total_report_cost - summary_data.get('Total Invoice Amount (Net Due)', 0.0)
+                    # Use the combined invoice amount (AWB + CCA) for the difference calculation
+                    difference_total_amount = summary_data.get('Total Invoice Amount (AWB + CCA)', 0.0) - total_report_cost
                     summary_data['Total Report Amount (for Matched AWBs)'] = total_report_cost
                     summary_data['Difference (Report - Invoice)'] = difference_total_amount
                     print(f"  -> Calculated Report Stats (after filtering recon data): Total Cost={total_report_cost:.2f}, Difference={difference_total_amount:.2f}")
                 else:
                     print("  -> Reconciliation data became empty after filtering 'Total' row for summary.")
                     summary_data['Total Report Amount (for Matched AWBs)'] = 0.0
-                    summary_data['Difference (Report - Invoice)'] = 0.0 - summary_data.get('Total Invoice Amount (Net Due)', 0.0)
+                    summary_data['Difference (Report - Invoice)'] = summary_data.get('Total Invoice Amount (AWB + CCA)', 0.0) - 0.0
             else:
                 summary_data['Total Report Amount (for Matched AWBs)'] = 0.0
 

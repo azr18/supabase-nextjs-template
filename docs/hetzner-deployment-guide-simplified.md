@@ -15,24 +15,26 @@ This simplified guide gets your MyNewAgent.ai SaaS platform running on Hetzner C
 
 ## Step 1: Create Your Server (15 minutes)
 
-### 1.1 In Hetzner Console
-1. **Go to:** https://console.hetzner.cloud/
-2. **Click:** "Create Server"
-3. **Choose:**
-   - **Location:** Choose closest to you (Frankfurt, Helsinki, etc.)
-   - **Image:** Ubuntu 24.04
-   - **Type:** CPX31 (4 vCPU, 8GB RAM) - €15.84/month
-   - **Name:** `mynewagent-prod`
-4. **Add SSH Key:** Upload your public key (or create one)
-5. **Click:** "Create & Buy Now"
+### 1.1 Your Current Server Details ✅
+**Server Status:** ALREADY CREATED & RUNNING
 
-**⏱️ Wait 2-3 minutes for server to start**
+- **Name:** mynewagent-production (ID: 65330281)
+- **Type:** CPX31 (4 vCPU, 8GB RAM, 160GB disk)
+- **Location:** Helsinki, Finland
+- **Public IP:** 95.216.150.29
+- **IPv6:** 2a01:4f9:c011:b707::/64
+- **Status:** Running and healthy
+- **Backups:** Enabled
+- **Monthly Cost:** $14.99/month
+- **Created:** June 6th, 2025
 
 ### 1.2 Connect to Your Server
 ```bash
-# Replace with your actual server IP
-ssh root@YOUR_SERVER_IP
+# Connect to your existing server
+ssh root@95.216.150.29
 ```
+
+**Note:** If SSH connection fails, you may need to reset the server password via Hetzner Cloud Console.
 
 ---
 
@@ -116,10 +118,15 @@ In your domain registrar (where you bought mynewagent.ai):
 1. **Find:** DNS settings
 2. **Add/Update A Records:**
    ```
-   @ (root) → YOUR_SERVER_IP
-   www → YOUR_SERVER_IP
+   @ (root) → 95.216.150.29
+   www → 95.216.150.29
    ```
-3. **Save changes**
+3. **Optional:** Add AAAA record for IPv6:
+   ```
+   @ (root) → 2a01:4f9:c011:b707::1
+   www → 2a01:4f9:c011:b707::1
+   ```
+4. **Save changes**
 
 **⏱️ DNS changes can take 5-60 minutes to propagate**
 
@@ -267,7 +274,7 @@ free -h
 
 | Step | Task | Time |
 |------|------|------|
-| 1 | Create Hetzner server | 15 min |
+| 1 | ✅ Server already created & running | 0 min |
 | 2 | Install software | 20 min |
 | 3 | Download & configure app | 10 min |
 | 4 | Setup domain DNS | 5 min |
@@ -275,14 +282,15 @@ free -h
 | 6 | Setup SSL & Nginx | 15 min |
 | 7 | Testing & verification | 10 min |
 | | **Waiting for DNS propagation** | 0-60 min |
-| | **TOTAL ACTIVE TIME** | **90 minutes** |
-| | **TOTAL WITH WAITING** | **2-3 hours** |
+| | **TOTAL ACTIVE TIME** | **75 minutes** |
+| | **TOTAL WITH WAITING** | **2-2.5 hours** |
 
 ## Common Issues & Quick Fixes
 
 **Can't connect to server:**
 - Check your SSH key is correct
-- Try `ssh -v root@YOUR_IP` for debug info
+- Try `ssh -v root@95.216.150.29` for debug info
+- If SSH fails, reset password via Hetzner Console
 
 **Docker build fails:**
 - Check your .env file has correct Supabase keys
@@ -294,7 +302,7 @@ free -h
 
 **SSL certificate fails:**
 - Make sure DNS is pointing to your server
-- Check: `nslookup mynewagent.ai` should show your server IP
+- Check: `nslookup mynewagent.ai` should show 95.216.150.29
 
 ## Need Help?
 
