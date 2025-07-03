@@ -1,0 +1,72 @@
+name: Deploy to Hetzner Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Hetzner Server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+          echo "🚀 Starting deployment..."
+          
+          # Navigate to project directory
+          cd /root/supabase-nextjs-template
+          
+          # Pull latest changes
+          echo "📥 Pulling latest changes from GitHub..."
+          git fetch origin
+          git reset --hard origin/main
+          
+          # Show what changed
+          echo "📋 Recent changes:"
+          git log --oneline -5
+          
+          # Stop services gracefully
+          echo "🛑 Stopping services..."
+          docker-compose down
+          
+          # Rebuild containers with latest code
+          echo "🔨 Rebuilding Docker containers..."
+          docker-compose build --no-cache
+          
+          # Start services
+          echo "▶️ Starting services..."
+          docker-compose up -d
+          
+          # Wait for services to start
+          echo "⏳ Waiting for services to start..."
+          sleep 30
+          
+          # Check if services are running
+          echo "✅ Checking service status..."
+          docker-compose ps
+          
+          # Test if website is responding
+          echo "🌐 Testing website response..."
+          curl -f -s -o /dev/null https://mynewagent.ai || echo "⚠️ Website might not be responding yet"
+          
+          # Clean up unused Docker images
+          echo "🧹 Cleaning up unused Docker images..."
+          docker image prune -f
+          
+          echo "🎉 Deployment completed!"
+          
+    - name: Deployment Status
+      if: failure()
+      run: |
+        echo "❌ Deployment failed! Check the logs above for details."
+        exit 1 
