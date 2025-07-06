@@ -26,14 +26,16 @@ cat > .env.production << 'EOF'
 NODE_ENV=production
 NEXT_PUBLIC_SITE_URL=https://mynewagent.ai
 NEXT_PUBLIC_SUPABASE_URL=https://hcyteovnllklmvoptxjr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFk7Y8f7fOinpL4ExkdbEGYtY_CQj0A
-
-# TODO: Replace these with your actual Google OAuth credentials
-SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=your-google-client-id
-SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=your-google-client-secret
-
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbW12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFk7Y8f7fOinpL4ExkdbEGYtY_CQj0A
 DOMAIN=mynewagent.ai
 EOF
+
+# Update Supabase config with Google OAuth credentials
+echo "🔧 Configure Google OAuth in Supabase Dashboard:"
+echo "1. Go to https://supabase.com/dashboard/project/hcyteovnllklmvoptxjr/auth/providers"
+echo "2. Enable Google provider"
+echo "3. Add your Google OAuth credentials"
+echo "4. Set redirect URLs to include https://mynewagent.ai"
 
 # Create SSL nginx configuration
 echo "🔒 Creating SSL configuration..."

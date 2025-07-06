@@ -11,20 +11,6 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
     restart: unless-stopped
-    depends_on:
-      - supabase
-    networks:
-      - app-network
-
-  supabase:
-    image: supabase/supabase:latest
-    environment:
-      - SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=${SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID}
-      - SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=${SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET}
-    volumes:
-      - ./supabase/config.toml:/etc/supabase/config.toml
-      - ./supabase/.env.production:/etc/supabase/.env
-    restart: unless-stopped
     networks:
       - app-network
 
@@ -44,7 +30,4 @@ services:
 
 networks:
   app-network:
-    driver: bridge
-
-volumes:
-  supabase_data: 
+    driver: bridge 
