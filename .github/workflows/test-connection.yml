@@ -1,0 +1,31 @@
+name: Test Server Connection
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Test SSH Connection
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        timeout: 60s
+        script: |
+          echo "✅ SSH Connection successful!"
+          echo "📍 Current location: $(pwd)"
+          echo "👤 Current user: $(whoami)"
+          echo "💾 Available space:"
+          df -h
+          echo "🐳 Docker status:"
+          systemctl status docker --no-pager
+          echo "🌐 Network test:"
+          ping -c 2 google.com
+          echo "📂 Root directory contents:"
+          ls -la /root/
+          echo "🎯 Test completed successfully!" 
