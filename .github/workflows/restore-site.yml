@@ -1,0 +1,64 @@
+name: Restore Site Now
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Restore Site via SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+        echo "🚀 Starting site restoration..."
+        
+        # Navigate and clean up
+        cd /root
+        rm -rf supabase-nextjs-template
+        
+        # Clone the repository (now public)
+        echo "📁 Cloning repository..."
+        git clone https://github.com/azr18/supabase-nextjs-template.git
+        cd supabase-nextjs-template
+        
+        # Create environment file
+        echo "🔧 Setting up environment..."
+        cat > .env << 'EOV'
+        NEXT_PUBLIC_SUPABASE_URL=https://hcyteovnllklmvoptxjr.supabase.co
+        NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFk7Y8f7fOinpL4ExkdbEGYtY_CQj0A
+        NEXT_PUBLIC_SITE_URL=https://mynewagent.ai
+        EOV
+        
+        # Stop any existing containers
+        echo "🛑 Stopping existing containers..."
+        docker-compose down || true
+        docker stop $(docker ps -q) 2>/dev/null || true
+        
+        # Start services
+        echo "🚀 Starting services..."
+        docker-compose up -d
+        
+        # Wait for services to start
+        echo "⏳ Waiting for services..."
+        sleep 15
+        
+        # Check status
+        echo "📊 Checking status..."
+        docker-compose ps
+        
+        # Test local response
+        echo "🔍 Testing local response..."
+        curl -I localhost:3000 || echo "Port 3000 not responding"
+        curl -I localhost:80 || echo "Port 80 not responding"
+        
+        # Check logs if something's wrong
+        echo "📋 Recent logs:"
+        docker-compose logs --tail=10
+        
+        echo "✅ Restoration completed!"
+        EOF 
