@@ -1,8 +1,5 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "rootDirectory": "nextjs"
+  "rootDirectory": "nextjs",
+  "regions": ["iad1"]
 } 

@@ -1,0 +1,38 @@
+# Docker and Hetzner-specific files
+docker-compose.yml
+docker-compose.production.yml
+nextjs/Dockerfile
+nginx.conf
+ssl/
+deploy.sh
+docker-local-test.sh
+troubleshoot.sh
+
+# Hetzner deployment documentation
+docs/hetzner-deployment-guide.md
+docs/hetzner-deployment-guide-simplified.md
+docs/hetzner-quick-start.md
+docs/docker-containerization-issues.md
+docs/docker-cleanup-summary.md
+
+# Test results and logs
+test-results/
+logs/
+nextjs/test-results/
+
+# Development files
+.env.local
+.env.development
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db 
