@@ -1,0 +1,56 @@
+name: Quick Server Fix
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        
+    - name: Execute Server Commands
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+        echo "🚀 Starting server fix..."
+        
+        # Check current state
+        echo "📍 Current directory: $(pwd)"
+        echo "📂 Contents:"
+        ls -la /root/
+        
+        # Clone project if missing
+        cd /root
+        if [ ! -d "supabase-nextjs-template" ]; then
+          echo "📁 Cloning project..."
+          git clone https://github.com/azr18/supabase-nextjs-template.git
+        fi
+        
+        cd supabase-nextjs-template
+        
+        # Create environment file
+        echo "🔧 Setting up environment..."
+        cat > .env << 'EOV'
+        NEXT_PUBLIC_SUPABASE_URL=https://hcyteovnllklmvoptxjr.supabase.co
+        NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFk7Y8f7fOinpL4ExkdbEGYtY_CQj0A
+        NEXT_PUBLIC_SITE_URL=https://mynewagent.ai
+        EOV
+        
+        # Stop and restart services
+        echo "🛑 Stopping services..."
+        docker-compose down || true
+        
+        echo "🚀 Starting services..."
+        docker-compose up -d
+        
+        # Check status
+        echo "📊 Service status:"
+        docker-compose ps
+        
+        echo "✅ Fix completed!"
+        EOF 
