@@ -1,0 +1,74 @@
+name: Simple Site Restore
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  simple-restore:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Simple Server Restore
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        timeout: 300s
+        script: |
+          echo "🚀 Starting simple restore..."
+          
+          # Check current directory
+          pwd
+          ls -la
+          
+          # Navigate to root
+          cd /root
+          
+          # Check if project exists
+          if [ ! -d "supabase-nextjs-template" ]; then
+            echo "📁 Project directory not found, cloning..."
+            git clone https://github.com/azr18/supabase-nextjs-template.git
+          else
+            echo "📁 Project directory exists, updating..."
+            cd supabase-nextjs-template
+            git pull origin main
+            cd /root
+          fi
+          
+          # Navigate to project
+          cd supabase-nextjs-template
+          
+          # Create basic .env file
+          echo "🔧 Setting up environment..."
+          cat > .env << 'EOF'
+          NEXT_PUBLIC_SUPABASE_URL=https://hcyteovnllklmvoptxjr.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFk7Y8f7fOinpL4ExkdbEGYtY_CQj0A
+          NEXT_PUBLIC_SITE_URL=https://mynewagent.ai
+          EOF
+          
+          # Stop any existing containers
+          echo "🛑 Stopping existing containers..."
+          docker-compose down || true
+          docker stop $(docker ps -q) 2>/dev/null || true
+          
+          # Start services
+          echo "🚀 Starting services..."
+          docker-compose up -d
+          
+          # Wait a moment
+          sleep 10
+          
+          # Check status
+          echo "📊 Checking status..."
+          docker-compose ps
+          
+          # Test if site responds
+          echo "🔍 Testing site..."
+          curl -I localhost:3000 || echo "Site not responding on port 3000"
+          
+          echo "✅ Simple restore completed!" 
