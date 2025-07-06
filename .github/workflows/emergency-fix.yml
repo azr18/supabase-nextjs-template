@@ -1,0 +1,109 @@
+name: Emergency Server Fix
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  emergency-restore:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Emergency Server Restore
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 22
+        script: |
+          echo "🚨 EMERGENCY RESTORE STARTED..."
+          
+          # Stop everything first
+          echo "🛑 Stopping all services..."
+          docker stop $(docker ps -aq) 2>/dev/null || true
+          docker rm $(docker ps -aq) 2>/dev/null || true
+          systemctl stop nginx || true
+          
+          # Clean up
+          echo "🧹 Cleaning up..."
+          cd /root
+          rm -rf supabase-nextjs-template 2>/dev/null || true
+          
+          # Clone fresh project
+          echo "📥 Cloning fresh project..."
+          git clone https://github.com/${{ github.repository }}.git
+          cd supabase-nextjs-template
+          
+          # Create environment file
+          echo "⚙️ Setting up environment..."
+          cat > .env << 'EOF'
+          NEXT_PUBLIC_SUPABASE_URL=https://hcyteovnllklmvoptxjr.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MDI5MTcsImV4cCI6MjA2NDA3ODkxN30.QEoxsRXBGSiZYFkEvIe_6wqdU2s8sprHIJEiLsLZy7I
+          NEXT_PUBLIC_PRODUCTNAME=Invoice Reconciler
+          NEXT_PUBLIC_SSO_PROVIDERS=google
+          NEXT_PUBLIC_THEME=theme-sass
+          NEXT_PUBLIC_SITE_URL=https://mynewagent.ai
+          PRIVATE_SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODUwMjkxNywiZXhwIjoyMDY0MDc4OTE3fQ.8Xr-2s5BoPfn2VYap3nZtu3UOYG8ezc5xThvbIPY4ik
+          SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXRlb3ZubGxrbG12b3B0eGpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODUwMjkxNywiZXhwIjoyMDY0MDc4OTE3fQ.8Xr-2s5BoPfn2VYap3nZtu3UOYG8ezc5xThvbIPY4ik
+          SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+          SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+          N8N_WEBHOOK_URL=http://localhost:5678/webhook/invoice-reconciler
+          N8N_WEBHOOK_SECRET=your_webhook_secret_here
+          EOF
+          
+          # Install Docker if needed
+          echo "🐳 Checking Docker..."
+          if ! command -v docker &> /dev/null; then
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sh get-docker.sh
+            systemctl start docker
+            systemctl enable docker
+          fi
+          
+          # Install Docker Compose if needed
+          if ! command -v docker-compose &> /dev/null; then
+            curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+          fi
+          
+          # Build and start everything
+          echo "🔨 Building application..."
+          docker-compose build --no-cache
+          
+          echo "▶️ Starting services..."
+          docker-compose up -d
+          
+          # Setup Nginx if needed
+          echo "🌐 Setting up Nginx..."
+          systemctl start nginx || true
+          systemctl enable nginx || true
+          
+          # Wait and check
+          echo "⏳ Waiting for services..."
+          sleep 30
+          
+          echo "✅ Checking status..."
+          docker-compose ps
+          systemctl status nginx --no-pager
+          
+          # Test website
+          echo "🌐 Testing website..."
+          curl -I http://localhost || echo "❌ Local test failed"
+          curl -I https://mynewagent.ai || echo "❌ Domain test failed"
+          
+          echo "🎉 EMERGENCY RESTORE COMPLETED!"
+          
+    - name: Success Notification
+      if: success()
+      run: |
+        echo "✅ Emergency restore completed successfully!"
+        echo "🌐 Check https://mynewagent.ai"
+        
+    - name: Failure Notification  
+      if: failure()
+      run: |
+        echo "❌ Emergency restore failed!"
+        echo "📝 Check the logs above for details" 
