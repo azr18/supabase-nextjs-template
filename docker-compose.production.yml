@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  nextjs:
+    build: 
+      context: ./nextjs
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+    restart: unless-stopped
+    depends_on:
+      - supabase
+    networks:
+      - app-network
+
+  supabase:
+    image: supabase/supabase:latest
+    environment:
+      - SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=${SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID}
+      - SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=${SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET}
+    volumes:
+      - ./supabase/config.toml:/etc/supabase/config.toml
+      - ./supabase/.env.production:/etc/supabase/.env
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-ssl.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - nextjs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  supabase_data: 

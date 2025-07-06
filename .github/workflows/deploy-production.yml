@@ -1,0 +1,75 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip building and just restart services'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to server
+      run: |
+        # Setup SSH
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        
+        # Deploy to server
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+        echo "🚀 Starting deployment..."
+        
+        # Navigate to project directory
+        cd /root/supabase-nextjs-template
+        
+        # Update code from Git
+        git pull origin main
+        
+        # Create production environment file
+        cat > .env.production << 'ENV_EOF'
+        NODE_ENV=production
+        NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+        NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=${{ secrets.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID }}
+        SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=${{ secrets.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET }}
+        DOMAIN=${{ secrets.DOMAIN }}
+        ENV_EOF
+        
+        # Stop existing services
+        docker-compose -f docker-compose.production.yml down
+        
+        # Build and start services
+        if [ "${{ github.event.inputs.skip_build }}" != "true" ]; then
+          echo "🔨 Building services..."
+          docker-compose -f docker-compose.production.yml build --no-cache
+        fi
+        
+        echo "🔄 Starting services..."
+        docker-compose -f docker-compose.production.yml up -d
+        
+        # Wait for services to be ready
+        sleep 30
+        
+        # Check service status
+        echo "📊 Service Status:"
+        docker-compose -f docker-compose.production.yml ps
+        
+        # Test endpoints
+        echo "🔍 Testing endpoints..."
+        curl -I http://${{ secrets.DOMAIN }} || echo "HTTP test failed"
+        curl -I https://${{ secrets.DOMAIN }} || echo "HTTPS test failed"
+        
+        echo "✅ Deployment completed!"
+        EOF 
